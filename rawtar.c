@@ -18,11 +18,14 @@ int parse_error() {
     exit(1);
 }
 
+/* returns a borrowed char* */
 char *decode_quoted(char * t) {
-    t++;
-    int len = strlen(t);
-    t[len-1] = 0;
     static char *s = NULL;
+    int len;
+
+    t++;
+    len = strlen(t);
+    t[len-1] = 0;
     if (s) {
         free(s);
         s = NULL;
@@ -78,7 +81,6 @@ int main()
     assert(entry);
 
     archive_write_set_format_pax_restricted(a);
-    // Write to stdout.
     check(archive_write_open_filename(a, NULL) == ARCHIVE_OK);
 
     while (yyparse()) {
