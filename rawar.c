@@ -10,11 +10,12 @@
 #include <string.h>
 #include <archive_entry.h>
 
-int datafd = -1;
-struct archive *a = NULL;
-struct archive_entry *entry = NULL;
+static int datafd = -1;
+static struct archive *a = NULL;
+static struct archive_entry *entry = NULL;
 
-void check(int ok) {
+static void
+check(int ok) {
     if (!ok) {
         if (a && archive_error_string(a)) {
             fprintf(stderr, "failed - %s\n", archive_error_string(a));
@@ -69,6 +70,8 @@ int main(int argc, char **argv)
         if (line[n - 1] == '\n')
             line[n - 1] = '\0';
         archive_entry_set_pathname(entry, line);
+        /* Setting this explicitly once seems necessary for cpio mode. */
+        archive_entry_set_size(entry, 0);
         while ((n = getline(&line, &len, stdin)) > 1) {
             if (line[n - 1] == '\n')
                 line[n - 1] = '\0';
@@ -76,8 +79,6 @@ int main(int argc, char **argv)
                 archive_entry_set_uid(entry, strtol(line + 4, NULL, 10));
             } else if (strncmp(line, "gid=", 4) == 0) {
                 archive_entry_set_gid(entry, strtol(line + 4, NULL, 10));
-            } else if (strncmp(line, "size=", 5) == 0) {
-                archive_entry_set_size(entry, strtol(line + 5, NULL, 10));
             } else if (strncmp(line, "perm=", 5) == 0) {
                 archive_entry_set_perm(entry, strtol(line + 5, NULL, 8));
             } else if (strncmp(line, "type=", 5) == 0) {
@@ -112,10 +113,11 @@ int main(int argc, char **argv)
             datafd = -1;
         }
     } while (n != -1);
+    
     check(!ferror(stdin));
-
-    archive_entry_free(entry);
     check(archive_write_close(a) == ARCHIVE_OK);
+    
+    archive_entry_free(entry);
     archive_write_free(a);
     return 0;
 }
