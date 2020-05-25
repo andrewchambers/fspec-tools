@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -13,11 +14,6 @@ int datafd = -1;
 struct archive *a = NULL;
 struct archive_entry *entry = NULL;
 
-int parse_error() {
-    fputs("parse error", stderr);
-    exit(1);
-}
-
 void check(int ok) {
     if (!ok) {
         if (a && archive_error_string(a)) {
@@ -31,10 +27,25 @@ void check(int ok) {
     }
 }
 
-#include "parse.inc.c"
+static int
+filetype(const char *type)
+{
+    if (strcmp(type, "reg") == 0)
+        return AE_IFREG;
+    if (strcmp(type, "dir") == 0)
+        return AE_IFDIR;
+    if (strcmp(type, "sym") == 0)
+        return AE_IFLNK;
+    fprintf(stderr, "unknown file type '%s'\n", type);
+    exit(1);
+}
 
 int main(int argc, char **argv)
 {
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t n;
+
     a = archive_write_new();
     entry = archive_entry_new();
     check(!!a);
@@ -49,7 +60,43 @@ int main(int argc, char **argv)
     check(archive_write_open_filename(a, NULL) == ARCHIVE_OK);
 
     errno = 0;
-    while (yyparse()) {
+    do {
+        /* skip blank lines */
+        while ((n = getline(&line, &len, stdin)) == 1)
+            ;
+        if (n <= 0)
+            break;
+        if (line[n - 1] == '\n')
+            line[n - 1] = '\0';
+        archive_entry_set_pathname(entry, line);
+        while ((n = getline(&line, &len, stdin)) > 1) {
+            if (line[n - 1] == '\n')
+                line[n - 1] = '\0';
+            if (strncmp(line, "uid=", 4) == 0) {
+                archive_entry_set_uid(entry, strtol(line + 4, NULL, 10));
+            } else if (strncmp(line, "gid=", 4) == 0) {
+                archive_entry_set_gid(entry, strtol(line + 4, NULL, 10));
+            } else if (strncmp(line, "size=", 5) == 0) {
+                archive_entry_set_size(entry, strtol(line + 5, NULL, 10));
+            } else if (strncmp(line, "perm=", 5) == 0) {
+                archive_entry_set_perm(entry, strtol(line + 5, NULL, 8));
+            } else if (strncmp(line, "type=", 5) == 0) {
+                archive_entry_set_filetype(entry, filetype(line + 5));
+            } else if (strncmp(line, "link=", 5) == 0) {
+                archive_entry_set_symlink(entry, line + 5);
+            } else if (strncmp(line, "source=", 7) == 0) {
+                const char *path = line + 7;
+                struct stat st;
+
+                check(stat(path, &st) == 0);
+                archive_entry_set_size(entry, st.st_size);
+                datafd = open(path, O_RDONLY);
+                check(datafd != -1);
+            } else {
+                fprintf(stderr, "unknown attribute line '%s'\n", line);
+                exit(1);
+            }
+        }
         check(archive_write_header(a, entry) == ARCHIVE_OK);
         archive_entry_clear(entry);
         if (datafd != -1) {
@@ -64,7 +111,8 @@ int main(int argc, char **argv)
             close(datafd);
             datafd = -1;
         }
-    }
+    } while (n != -1);
+    check(!ferror(stdin));
 
     archive_entry_free(entry);
     check(archive_write_close(a) == ARCHIVE_OK);
