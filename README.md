@@ -17,21 +17,3 @@ link=bar
 
 $ rawtar < manifest > out.tar
 ```
-
-/bin
-type=dir
-mode=755
-uid=0
-
-/bin/ksh
-type=reg
-mode=644
-source=path/to/content
-
-/bin/sh
-type=sym
-link=ksh
-
-/share
-type=dir
-mode=755
