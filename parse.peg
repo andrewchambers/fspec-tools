@@ -1,22 +1,22 @@
 
-ws <- (" " / &"\n" )
-attr <- "uid=" <[0-9]+> ws { archive_entry_set_uid(entry, strtol(yytext, NULL, 10)); }
-      / "gid=" <[0-9]+> ws { archive_entry_set_gid(entry, strtol(yytext, NULL, 10)); }
-      / "perm=" <[0-9]+> ws { archive_entry_set_perm(entry, strtol(yytext, NULL, 8)); }
-      / "type=reg" ws { archive_entry_set_filetype(entry, AE_IFREG); }
-      / "type=dir" ws { archive_entry_set_filetype(entry, AE_IFDIR); }
-      / "type=symlink" ws { archive_entry_set_filetype(entry, AE_IFLNK); }
-      / "path=" <quoted> ws { archive_entry_set_pathname(entry, decode_quoted(yytext)); }
-      / "target=" <quoted> ws { archive_entry_set_symlink(entry, decode_quoted(yytext)); }
-      / "content=" <quoted> ws
+start <- <rawval> "\n" attr* ("\n" / (!.)) { archive_entry_set_pathname(entry, yytext); }
+rawval <-  (!"\n" .)*
+attr <- "uid=" <[0-9]+> "\n" { archive_entry_set_uid(entry, strtol(yytext, NULL, 10)); }
+      / "gid=" <[0-9]+> "\n" { archive_entry_set_gid(entry, strtol(yytext, NULL, 10)); }
+      / "size=" <[0-9]+> "\n" { archive_entry_set_size(entry, strtol(yytext, NULL, 10)); }
+      / "perm=" <[0-9]+> "\n" { archive_entry_set_perm(entry, strtol(yytext, NULL, 8)); }
+      / "type=reg\n" { archive_entry_set_filetype(entry, AE_IFREG); }
+      / "type=dir\n" { archive_entry_set_filetype(entry, AE_IFDIR); }
+      / "type=sym\n" { archive_entry_set_filetype(entry, AE_IFLNK); }
+      / "link=" <rawval> "\n" { archive_entry_set_symlink(entry, yytext); }
+      / "source=" <rawval> "\n"
           {
             struct stat st;
-            char *p = decode_quoted(yytext);
-            check(stat(p, &st) == 0);
+            check(stat(yytext, &st) == 0);
             archive_entry_set_size(entry, st.st_size);
-            datafd = open(p, O_RDONLY);
+            if (datafd != -1)
+              close(datafd);
+            datafd = open(yytext, O_RDONLY);
             check(datafd != -1);
           }
       / !"\n" . { parse_error(); }
-quoted <- '"' ("\\\"" / (!'"' .))* '"'
-start <- attr* "\n"
