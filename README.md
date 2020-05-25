@@ -9,7 +9,7 @@ foo
 type=reg
 uid=123
 gid=123
-source="./README.md"
+source=./README.md
 
 bar
 type=sym
