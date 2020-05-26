@@ -4,7 +4,12 @@ set -eu
 find $1 | while read f 
 do
   echo "$f"
-  if test -f "$f"
+  # We must check for link first.
+  if test -L "$f"
+  then
+    echo "type=sym"
+    echo "link=$(readlink $f)"
+  elif test -f "$f"
   then
     echo "type=reg"
     stat "$f" --printf="perm=%a\n"
@@ -13,10 +18,6 @@ do
   then
     echo "type=dir"
     stat "$f" --printf="perm=%a\n"
-  elif test -L "$f"
-  then
-    echo "type=sym"
-    echo "link=$(readlink $f)"
   else
     echo "unsupported file type at $f" >&2
     exit 1
