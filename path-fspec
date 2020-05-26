@@ -7,12 +7,12 @@ do
   if test -f "$f"
   then
     echo "type=reg"
-    stat "$f" --printf="mode=%a\n"
+    stat "$f" --printf="perm=%a\n"
     echo "source=$f"
   elif test -d "$f"
   then
     echo "type=dir"
-    stat "$f" --printf="mode=%a\n"
+    stat "$f" --printf="perm=%a\n"
   elif test -L "$f"
   then
     echo "type=sym"
