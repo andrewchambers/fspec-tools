@@ -4,7 +4,7 @@ Tools to create filesystem images from an fspec filesystem specification.
 
 ## Examples
 ```
-$ cat fs.spec
+$ cat fs.fspec
 foo
 type=reg
 uid=123
