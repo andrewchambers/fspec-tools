@@ -1,6 +1,6 @@
 # fspec-tools
 
-Create a tarball from a textual tar description.
+Tools to create filesystem images from an fspec filesystem specification.
 
 ## Examples
 ```
