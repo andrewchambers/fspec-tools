@@ -1,0 +1,25 @@
+#! /bin/sh
+set -eu
+
+find $1 | while read f 
+do
+  echo "$f"
+  if test -f "$f"
+  then
+    echo "type=reg"
+    stat "$f" --printf="mode=%a\n"
+    echo "source=$f"
+  elif test -L "$f"
+  then
+    echo "type=sym"
+    echo "link=$(readlink $f)"
+  elif test -d "$f"
+  then
+    echo "type=dir"
+    stat "$f" --printf="mode=%a\n"
+  else
+    echo "unsupported file type at $f" >&2
+    exit 1
+  fi
+  echo ""
+done

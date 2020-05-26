@@ -1,4 +1,4 @@
-# rawtar
+# fspec-tools
 
 Create a tarball from a textual tar description.
 
@@ -15,5 +15,6 @@ bar
 type=sym
 link=bar
 
-$ rawtar < manifest > out.tar
+$ fspec-mktar < fs.fspec > out.tar
+$ fspec-mkcpio < fs.fspec > out.cpio
 ```
