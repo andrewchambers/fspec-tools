@@ -15,6 +15,6 @@ bar
 type=sym
 link=bar
 
-$ fspec-mktar < fs.fspec > out.tar
-$ fspec-mkcpio < fs.fspec > out.cpio
+$ fspec-tar < fs.fspec > out.tar
+$ fspec-cpio < fs.fspec > out.cpio
 ```
