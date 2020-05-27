@@ -79,7 +79,7 @@ int main(int argc, char **argv)
                 archive_entry_set_uid(entry, strtol(line + 4, NULL, 10));
             } else if (strncmp(line, "gid=", 4) == 0) {
                 archive_entry_set_gid(entry, strtol(line + 4, NULL, 10));
-            } else if (strncmp(line, "perm=", 5) == 0) {
+            } else if (strncmp(line, "mode=", 5) == 0) {
                 archive_entry_set_perm(entry, strtol(line + 5, NULL, 8));
             } else if (strncmp(line, "type=", 5) == 0) {
                 archive_entry_set_filetype(entry, filetype(line + 5));

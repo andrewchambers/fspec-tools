@@ -12,12 +12,12 @@ do
   elif test -f "$f"
   then
     echo "type=reg"
-    stat "$f" --printf="perm=%a\n"
+    stat "$f" --printf="mode=%a\n"
     echo "source=$f"
   elif test -d "$f"
   then
     echo "type=dir"
-    stat "$f" --printf="perm=%a\n"
+    stat "$f" --printf="mode=%a\n"
   else
     echo "unsupported file type at $f" >&2
     exit 1
