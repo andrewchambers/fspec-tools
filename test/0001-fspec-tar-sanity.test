@@ -14,7 +14,6 @@ baz
 type=dir
 EOF
 
-
 test -f foo
 test -f bar
 test -d baz
