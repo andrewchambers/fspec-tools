@@ -1,0 +1,24 @@
+#! /bin/sh
+
+set -eux
+
+cat <<EOF | fspec-tar | tar -xf -
+foo
+type=reg
+mode=700
+
+bar
+type=reg
+
+baz
+type=dir
+EOF
+
+
+test -f foo
+test -f bar
+test -d baz
+
+test "700" = "$(stat --printf "%a" foo)"
+test "644" = "$(stat --printf "%a" bar)"
+test "755" = "$(stat --printf "%a" baz)"

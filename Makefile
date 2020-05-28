@@ -19,6 +19,10 @@ src/fspec-cpio.o: src/fspec-archive.c
 .o:
 	$(CC) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
+.PHONY: test
+test: $(BIN)
+	./test/run-all
+
 .PHONY: clean
 clean:
 	rm -f $(BIN) src/fspec-tar.o src/fspec-cpio.o
