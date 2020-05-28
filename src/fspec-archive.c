@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <archive.h>
 #include <errno.h>
 #include <string.h>
+#include <archive.h>
 #include <archive_entry.h>
 
 static int datafd = -1;
@@ -54,7 +54,8 @@ defaultmode(const char *type)
     exit(1);
 }
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
     char *line = NULL;
     size_t len = 0;
