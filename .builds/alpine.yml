@@ -15,5 +15,6 @@ sources:
   - https://github.com/andrewchambers/fspec-tools
 tasks:
   - build: |
-      make
-      ./test/run-all -v
+    cd fspec-tools
+    make
+    ./test/run-all -v
