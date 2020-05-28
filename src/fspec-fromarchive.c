@@ -93,6 +93,10 @@ main (int argc, char **argv)
         check(printf("%s\n", path) > 0);
         check(printf("type=%s\n", filetype(archive_entry_filetype(entry))) > 0);
         check(printf("mode=%o\n", archive_entry_perm(entry)) > 0);
+        if (archive_entry_uid(entry) != 0)
+            check(printf("uid=%ld\n", archive_entry_uid(entry)) > 0);
+        if (archive_entry_gid(entry) != 0)
+            check(printf("gid=%ld\n", archive_entry_gid(entry)) > 0);
         if (archive_entry_filetype(entry) == AE_IFLNK) {
             const char *link = archive_entry_symlink(entry);
             check(link != NULL);
