@@ -8,13 +8,34 @@ then
   exit 1
 fi
 
+verbose=0
+while getopts 'v' opt
+do
+  case $opt in
+    v) verbose=1 ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+fail () {
+  echo fail
+  exit 1
+}
+
+pass () {
+  echo pass
+}
+
 for t in ./test/*.test
 do  
   echo -n "$(basename $t) ... "
-  if ! ./test/run-one $t > /dev/null 2>&1
+  if test $verbose = 1
   then
-    echo fail
-    exit 1
+    echo
+    ./test/run-one $t || fail
+  else
+    ./test/run-one $t > /dev/null 2>&1 || fail
   fi
-  echo pass
+  pass
 done

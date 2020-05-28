@@ -1,0 +1,19 @@
+image: alpine/latest
+packages:
+  - libarchive-dev
+  - libarchive-static
+  - zlib-dev
+  - zlib-static
+  - bzip2-dev
+  - bzip2-static
+  - xz-dev
+  - lz4-dev
+  - lz4-static
+  - acl-dev
+  - acl-static
+sources:
+  - https://github.com/andrewchambers/fspec-tools
+tasks:
+  - build: |
+      make
+      ./test/run-all -v
