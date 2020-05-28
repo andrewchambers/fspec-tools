@@ -22,7 +22,7 @@ check(int ok) {
         } else if (errno != 0) {
             fprintf(stderr, "failed - %s\n", strerror(errno));
         } else {
-            fputs("failed", stderr);
+            fputs("failed\n", stderr);
         }
         exit(1);
     }

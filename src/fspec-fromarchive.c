@@ -22,7 +22,7 @@ check(int ok) {
         } else if (errno != 0) {
             fprintf(stderr, "failed - %s\n", strerror(errno));
         } else {
-            fputs("failed", stderr);
+            fputs("failed\n", stderr);
         }
         exit(1);
     }
@@ -86,7 +86,7 @@ main (int argc, char **argv)
         const char *path = archive_entry_pathname(entry);
         check(path != NULL);
         if (strchr(path, '\n')) {
-            fputs("archive entry path contains new line, aborting", stderr);
+            fputs("archive entry path contains new line, aborting\n", stderr);
             exit(1);
         }
 
@@ -97,7 +97,7 @@ main (int argc, char **argv)
             const char *link = archive_entry_symlink(entry);
             check(link != NULL);
             if (strchr(path, '\n')) {
-                fputs("link target contains new line, aborting", stderr);
+                fputs("link target contains new line, aborting\n", stderr);
                 exit(1);
             }
             check(printf("link=%s\n", link) > 0);
@@ -119,4 +119,5 @@ main (int argc, char **argv)
 
     archive_read_free(a);
     check(fflush(stdout) == 0 && !ferror(stdout));
+    return 0;
 }
