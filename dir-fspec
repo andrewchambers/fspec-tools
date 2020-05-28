@@ -1,9 +1,30 @@
 #! /bin/sh
 set -eu
 
-find $1 | while read f 
+usage () {
+  echo "path-fspec [-r root] [-a] [PATH]"
+  exit 1
+}
+
+root=""
+absolute=0
+
+while getopts 'har:' opt
 do
-  echo "$f"
+  case $opt in
+    a) absolute=1 ;;
+    r) root=$OPTARG ;;
+    h) usage ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+cd ${1:-.}
+
+find . -not -name "." | cut -c 3- | while read f
+do
+  echo "$root$f"
   # We must check for link first.
   if test -L "$f"
   then
@@ -13,7 +34,10 @@ do
   then
     echo "type=reg"
     stat "$f" --printf="mode=%a\n"
-    echo "source=$f"
+    if test "$absolute" = 1
+    then
+      echo "source=$(realpath $f)"
+    fi
   elif test -d "$f"
   then
     echo "type=dir"
