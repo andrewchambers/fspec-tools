@@ -6,6 +6,5 @@ sources:
 tasks:
   - build: |
       cd fspec-tools
-      make "CFLAGS=$(pkg-config --cflags libarchive)"\
-           "LDFLAGS=$(pkg-config --libs libarchive)"
-      ./test/run-all -v
+      make test "CFLAGS=$(pkg-config --cflags libarchive)"\
+                "LDFLAGS=$(pkg-config --libs libarchive)"

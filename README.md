@@ -1,4 +1,5 @@
 # fspec-tools
+[![builds.sr.ht status](https://builds.sr.ht/~ach/fspec-tools/commits/alpine.yml.svg)](https://builds.sr.ht/~ach/fspec-tools/commits/alpine.yml?)
 
 Tools to create filesystem images from an fspec filesystem specification.
 

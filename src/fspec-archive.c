@@ -5,28 +5,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <archive.h>
-#include <errno.h>
 #include <string.h>
+#include <assert.h>
+#include <err.h>
+#include <archive.h>
 #include <archive_entry.h>
-
-static int datafd = -1;
-static struct archive *a = NULL;
-static struct archive_entry *entry = NULL;
-
-static void
-check(int ok) {
-    if (!ok) {
-        if (a && archive_error_string(a)) {
-            fprintf(stderr, "failed - %s\n", archive_error_string(a));
-        } else if (errno != 0) {
-            fprintf(stderr, "failed - %s\n", strerror(errno));
-        } else {
-            fputs("failed", stderr);
-        }
-        exit(1);
-    }
-}
 
 static int
 filetype(const char *type)
@@ -54,16 +37,20 @@ defaultmode(const char *type)
     exit(1);
 }
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
     char *line = NULL;
     size_t len = 0;
     ssize_t n = 0;
+    int datafd = -1;
+    struct archive *a = NULL;
+    struct archive_entry *entry = NULL;
 
     a = archive_write_new();
     entry = archive_entry_new();
-    check(!!a);
-    check(!!entry);
+    assert(a);
+    assert(entry);
 #if defined(OUT_FORMAT_CPIO)
     archive_write_set_format_cpio(a);
 #elif defined(OUT_FORMAT_TAR)
@@ -71,9 +58,8 @@ int main(int argc, char **argv)
 #else
 #error "define OUT_FORMAT_CPIO or OUT_FORMAT_TAR"
 #endif
-    check(archive_write_open_filename(a, NULL) == ARCHIVE_OK);
-
-    errno = 0;
+    if (archive_write_open_filename(a, NULL) != ARCHIVE_OK)
+        errx(1, "archive open failed: %s", archive_error_string(a));
 
     do {
         int set_default_mode = 1;
@@ -86,9 +72,10 @@ int main(int argc, char **argv)
             break;
         if (line[n - 1] == '\n')
             line[n - 1] = '\0';
+
         archive_entry_set_pathname(entry, line);
-        /* Setting this explicitly once seems necessary for cpio mode. */
         archive_entry_set_size(entry, 0);
+
         while ((n = getline(&line, &len, stdin)) > 1) {
             if (line[n - 1] == '\n')
                 line[n - 1] = '\0';
@@ -103,45 +90,57 @@ int main(int argc, char **argv)
                 const char *t = line + 5;
 
                 archive_entry_set_filetype(entry, filetype(t));
-                if (set_default_mode) {
+                if (set_default_mode)
                     mode = defaultmode(t);
-                }
             } else if (strncmp(line, "link=", 5) == 0) {
                 archive_entry_set_symlink(entry, line + 5);
             } else if (strncmp(line, "source=", 7) == 0) {
                 const char *path = line + 7;
                 struct stat st;
 
-                check(stat(path, &st) == 0);
+                if (stat(path, &st) != 0)
+                    err(1, "stat %s failed", path);
                 archive_entry_set_size(entry, st.st_size);
                 datafd = open(path, O_RDONLY);
-                check(datafd != -1);
+                if (datafd == -1)
+                    err(1, "open %s failed", path);
             } else {
-                fprintf(stderr, "unknown attribute line '%s'\n", line);
-                exit(1);
+                errx(1, "unknown attribute line '%s'", line);
             }
         }
         archive_entry_set_perm(entry, mode);
-        check(archive_write_header(a, entry) == ARCHIVE_OK);
-        archive_entry_clear(entry);
+
+        if(archive_write_header(a, entry) != ARCHIVE_OK)
+            errx(1, "archive write header failed: %s", archive_error_string(a));
+
         if (datafd != -1) {
             char buff[4096];
             int wlen = read(datafd, buff, sizeof(buff));
-            check(wlen >= 0);
+            if (wlen < 0)
+                err(1, "read failed");
             while ( wlen > 0 ) {
-                check(archive_write_data(a, buff, wlen) == wlen);
+                if (archive_write_data(a, buff, wlen) != wlen)
+                    errx(1, "archive write failed");
+
                 wlen = read(datafd, buff, sizeof(buff));
-                check(wlen >= 0);
+                if (wlen >= 0)
+                    err(1, "read failed");
             }
             close(datafd);
             datafd = -1;
         }
+
+        archive_entry_clear(entry);
     } while (n != -1);
+
+    if(ferror(stdin))
+        err(1, "io error");
     
-    check(!ferror(stdin));
-    check(archive_write_close(a) == ARCHIVE_OK);
-    
+    if (archive_write_close(a) != ARCHIVE_OK)
+        errx(1, "archive close failed: %s", archive_error_string(a));
+
     archive_entry_free(entry);
     archive_write_free(a);
+
     return 0;
 }

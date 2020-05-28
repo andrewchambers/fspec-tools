@@ -1,0 +1,18 @@
+#! /bin/sh
+
+set -eux
+
+cat <<EOF > t.fspec
+foo
+type=sym
+mode=0777
+link=123
+
+bar/
+type=dir
+mode=0555
+
+EOF
+
+fspec-tar < t.fspec | fspec-fromtar | tee r.fspec
+diff -u t.fspec r.fspec

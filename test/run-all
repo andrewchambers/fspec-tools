@@ -8,14 +8,6 @@ then
   exit 1
 fi
 
-verbose=0
-while getopts 'v' opt
-do
-  case $opt in
-    v) verbose=1 ;;
-  esac
-done
-
 shift $((OPTIND-1))
 
 fail () {
@@ -30,12 +22,15 @@ pass () {
 for t in ./test/*.test
 do  
   echo -n "$(basename $t) ... "
-  if test $verbose = 1
+  tmpfile="$(mktemp)"
+  exec 3>"$tmpfile"
+  exec 4<"$tmpfile"
+  rm "$tmpfile"
+  if ! ./test/run-one $t >&3 /dev/null 2>&1
   then
-    echo
-    ./test/run-one $t || fail
-  else
-    ./test/run-one $t > /dev/null 2>&1 || fail
+    echo -e "\nTest log:"
+    cat <&4
+    fail
   fi
   pass
 done
