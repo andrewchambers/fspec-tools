@@ -1,0 +1,11 @@
+image: openbsd/latest
+packages:
+  - libarchive
+sources:
+  - https://github.com/andrewchambers/fspec-tools
+tasks:
+  - build: |
+      cd fspec-tools
+      make "CFLAGS=$(pkg-config --cflags libarchive)"\
+           "LDFLAGS=$(pkg-config --libs libarchive)"
+      ./test/run-all -v
