@@ -7,7 +7,7 @@ touch foo/bar.txt
 cat <<EOF > t.fspec
 bar.txt
 type=reg
-mode=$(stat -c "0%a" foo/bar.txt)
+mode=$(fmode foo/bar.txt)
 uid=$(id -u)
 gid=$(id -g)
 
@@ -19,7 +19,7 @@ diff -u t.fspec r.fspec
 cat <<EOF > t.fspec
 x/bar.txt
 type=reg
-mode=$(stat -c "0%a" foo/bar.txt)
+mode=$(fmode foo/bar.txt)
 source=$(pwd)/foo/bar.txt
 
 EOF
@@ -34,7 +34,7 @@ mkdir foo/bar
 cat <<EOF > t.fspec
 bar
 type=dir
-mode=$(stat -c "0%a" foo/bar)
+mode=$(fmode foo/bar)
 uid=$(id -u)
 gid=$(id -g)
 
