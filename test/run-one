@@ -12,7 +12,7 @@ source_root="$(pwd)"
 export PATH="$source_root:$source_root/src:$PATH"
 scratch="$(mktemp -d)"
 
-function finish {
+finish () {
   rm -rf "$scratch"
 }
 trap finish EXIT
