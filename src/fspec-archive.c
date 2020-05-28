@@ -41,11 +41,24 @@ filetype(const char *type)
     exit(1);
 }
 
+static int
+defaultmode(const char *type)
+{
+    if (strcmp(type, "reg") == 0)
+        return 0644;
+    if (strcmp(type, "dir") == 0)
+        return 0755;
+    if (strcmp(type, "sym") == 0)
+        return 0777;
+    fprintf(stderr, "unknown file type '%s'\n", type);
+    exit(1);
+}
+
 int main(int argc, char **argv)
 {
     char *line = NULL;
     size_t len = 0;
-    ssize_t n;
+    ssize_t n = 0;
 
     a = archive_write_new();
     entry = archive_entry_new();
@@ -61,7 +74,11 @@ int main(int argc, char **argv)
     check(archive_write_open_filename(a, NULL) == ARCHIVE_OK);
 
     errno = 0;
+
     do {
+        int set_default_mode = 1;
+        int mode = 0;
+
         /* skip blank lines */
         while ((n = getline(&line, &len, stdin)) == 1)
             ;
@@ -80,9 +97,15 @@ int main(int argc, char **argv)
             } else if (strncmp(line, "gid=", 4) == 0) {
                 archive_entry_set_gid(entry, strtol(line + 4, NULL, 10));
             } else if (strncmp(line, "mode=", 5) == 0) {
-                archive_entry_set_perm(entry, strtol(line + 5, NULL, 8));
+                set_default_mode = 0;
+                mode = strtol(line + 5, NULL, 8);
             } else if (strncmp(line, "type=", 5) == 0) {
-                archive_entry_set_filetype(entry, filetype(line + 5));
+                const char *t = line + 5;
+
+                archive_entry_set_filetype(entry, filetype(t));
+                if (set_default_mode) {
+                    mode = defaultmode(t);
+                }
             } else if (strncmp(line, "link=", 5) == 0) {
                 archive_entry_set_symlink(entry, line + 5);
             } else if (strncmp(line, "source=", 7) == 0) {
@@ -98,6 +121,7 @@ int main(int argc, char **argv)
                 exit(1);
             }
         }
+        archive_entry_set_perm(entry, mode);
         check(archive_write_header(a, entry) == ARCHIVE_OK);
         archive_entry_clear(entry);
         if (datafd != -1) {

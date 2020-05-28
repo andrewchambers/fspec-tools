@@ -1,0 +1,20 @@
+#! /bin/sh
+
+set -eu
+
+if ! test -d .git
+then
+  echo "run from source root."
+  exit 1
+fi
+
+for t in ./test/*.test
+do  
+  echo -n "$(basename $t) ... "
+  if ! ./test/run-one $t > /dev/null 2>&1
+  then
+    echo fail
+    exit 1
+  fi
+  echo pass
+done
