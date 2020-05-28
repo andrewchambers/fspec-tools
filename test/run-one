@@ -17,7 +17,7 @@ finish () {
 }
 trap finish EXIT
 
-t=$(realpath $1)
+t=$(readlink -f $1)
 cd $scratch
 set +e
 $t

@@ -82,10 +82,10 @@ main (int argc, char **argv)
         printf("mode=%04o\n", archive_entry_perm(entry));
 
         if (archive_entry_uid(entry) != 0)
-            printf("uid=%ld\n", archive_entry_uid(entry));
+            printf("uid=%lld\n", (long long)archive_entry_uid(entry));
 
         if (archive_entry_gid(entry) != 0)
-            printf("gid=%ld\n", archive_entry_gid(entry));
+            printf("gid=%lld\n", (long long)archive_entry_gid(entry));
 
         if (archive_entry_filetype(entry) == AE_IFLNK) {
             const char *link = archive_entry_symlink(entry);
