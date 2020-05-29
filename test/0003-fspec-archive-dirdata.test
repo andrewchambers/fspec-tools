@@ -17,6 +17,7 @@ dataname="$(echo data/*)"
 cat <<EOF > expected.fspec
 foo
 type=reg
+mode=0644
 source=$dataname
 
 EOF
