@@ -1,0 +1,15 @@
+#! /bin/sh
+set -eux
+
+mkdir foo
+touch foo/a.txt
+touch foo/b.sh
+chmod +x foo/b.sh
+mkfifo c
+
+fspec-fromdir -r ./foo > a.fspec
+# XXX Sort entries portable
+tar -C foo -f . | fspec-fromtar > b.fspec
+
+diff -u a.fspec b.fspec
+
