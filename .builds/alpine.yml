@@ -6,5 +6,4 @@ sources:
 tasks:
   - build: |
       cd fspec-tools
-      make
-      ./test/run-all -v
+      make test

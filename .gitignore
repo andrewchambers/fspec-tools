@@ -1,3 +1,7 @@
 *.o
 /src/fspec-tar
 /src/fspec-cpio
+/src/fspec-fomtar
+/src/fspec-fomcpop
+/src/fspec-fromdir
+/test/fmode

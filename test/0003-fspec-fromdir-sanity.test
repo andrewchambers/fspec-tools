@@ -1,0 +1,42 @@
+#! /bin/sh
+set -eux
+
+mkdir foo
+touch foo/bar.txt
+
+cat <<EOF > t.fspec
+bar.txt
+type=reg
+mode=$(fmode foo/bar.txt)
+
+EOF
+
+fspec-fromdir -r ./foo > r.fspec
+diff -u t.fspec r.fspec
+
+cat <<EOF > t.fspec
+x/bar.txt
+type=reg
+mode=$(fmode foo/bar.txt)
+source=$(pwd)/foo/bar.txt
+
+EOF
+
+fspec-fromdir -p "x/" -r -a ./foo > r.fspec
+diff -u t.fspec r.fspec
+
+rm -rf ./foo
+mkdir foo
+mkdir foo/bar
+
+cat <<EOF > t.fspec
+bar
+type=dir
+mode=$(fmode foo/bar)
+
+EOF
+
+fspec-fromdir -r ./foo > r.fspec
+diff -u t.fspec r.fspec
+
+

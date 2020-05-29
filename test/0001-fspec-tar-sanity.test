@@ -5,7 +5,7 @@ set -eux
 cat <<EOF | fspec-tar | tar -xf -
 foo
 type=reg
-mode=700
+mode=0700
 
 bar
 type=reg
@@ -18,6 +18,6 @@ test -f foo
 test -f bar
 test -d baz
 
-test "700" = "$(stat -c "%a" foo)"
-test "644" = "$(stat -c "%a" bar)"
-test "755" = "$(stat -c "%a" baz)"
+test "0700" = "$(fmode foo)"
+test "0644" = "$(fmode bar)"
+test "0755" = "$(fmode baz)"
