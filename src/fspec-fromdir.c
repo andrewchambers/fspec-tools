@@ -14,16 +14,15 @@ int absolute = 0;
 char *prefix = "";
 
 static const char *
-filetype(int tflag)
+filetype(mode_t st_mode)
 {
-    if (tflag == FTW_F)
-        return "reg";
-    if (tflag == FTW_D)
-        return "dir";
-    if (tflag == FTW_SL)
-        return "sym";
-    fprintf(stderr, "unknown file type flags '%d'\n", tflag);
-    exit(1);
+    if (S_ISDIR(st_mode)) return "dir";
+    if (S_ISREG(st_mode)) return "reg";
+    if (S_ISLNK(st_mode)) return "sym";
+    if (S_ISFIFO(st_mode)) return "fifo";
+    if (S_ISBLK(st_mode)) return "blockdev";
+    if (S_ISCHR(st_mode)) return "chardev";
+    errx(1, "unknown file type mode '%o'", st_mode);
 }
 
 static int
@@ -49,7 +48,7 @@ printfspec(const char *fpath, const struct stat *sb,
         return 0;
 
     printf("%s%s\n", prefix, fpath+2);
-    printf("type=%s\n", filetype(tflag));
+    printf("type=%s\n", filetype(sb->st_mode));
 
     if (!isdefaultmode(sb->st_mode))
         printf("mode=%04o\n", sb->st_mode & ~S_IFMT);
@@ -61,7 +60,7 @@ printfspec(const char *fpath, const struct stat *sb,
             printf("gid=%d\n", sb->st_gid);
     }
 
-    if (tflag == FTW_SL) {
+    if (S_ISLNK(sb->st_mode)) {
         len = readlink(fpath, pathbuf, sizeof(pathbuf));
         if (len < 0)
             err(1, "readlink of %s failed", fpath);
@@ -73,13 +72,17 @@ printfspec(const char *fpath, const struct stat *sb,
         printf("link=%s\n", pathbuf);
     }
 
-    if (tflag == FTW_F && absolute) {
+    if (S_ISREG(sb->st_mode) && absolute) {
         if (realpath(fpath, pathbuf) == NULL)
             err(1, "realpath of %s failed", fpath);
         if (strchr(pathbuf, '\n'))
             errx(1, "file path contains new line, aborting");
         printf("source=%s\n", pathbuf);
     }
+
+    if (S_ISBLK(sb->st_mode) || S_ISCHR(sb->st_mode))
+        printf("devnum=%llu\n", (long long unsigned)sb->st_rdev);
+
     puts("");
     return 0;
 }
