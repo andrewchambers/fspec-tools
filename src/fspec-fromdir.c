@@ -16,12 +16,12 @@ char *prefix = "";
 static const char *
 filetype(mode_t st_mode)
 {
-    if (S_ISDIR(st_mode)) return "dir";
-    if (S_ISREG(st_mode)) return "reg";
-    if (S_ISLNK(st_mode)) return "sym";
+    if (S_ISDIR(st_mode))  return "dir";
+    if (S_ISREG(st_mode))  return "reg";
+    if (S_ISLNK(st_mode))  return "sym";
     if (S_ISFIFO(st_mode)) return "fifo";
-    if (S_ISBLK(st_mode)) return "blockdev";
-    if (S_ISCHR(st_mode)) return "chardev";
+    if (S_ISBLK(st_mode))  return "blockdev";
+    if (S_ISCHR(st_mode))  return "chardev";
     errx(1, "unknown file type mode '%o'", st_mode);
 }
 
