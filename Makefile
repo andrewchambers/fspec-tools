@@ -1,5 +1,8 @@
 .POSIX:
 
+PREFIX=/usr/local
+BINDIR=$(PREFIX)/bin
+
 CFLAGS+=-Wall -Wpedantic
 LDLIBS=-l archive
 
@@ -8,8 +11,9 @@ BIN=\
 	src/fspec-cpio\
 	src/fspec-fromtar\
 	src/fspec-fromcpio\
-	src/fspec-fromdir\
-	src/fmode
+	src/fspec-fromdir
+
+TBIN=src/fmode
 
 OBJ=\
 	src/fspec-tar.o\
@@ -44,9 +48,14 @@ src/fmode.o: src/fmode.c
 	$(CC) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
 .PHONY: test
-test: $(BIN)
+test: $(BIN) $(TBIN)
 	./test/run-all
+
+.PHONY: install
+install: all
+	mkdir -p $(DESTDIR)$(BINDIR)
+	cp $(BIN) $(DESTDIR)$(BINDIR)
 
 .PHONY: clean
 clean:
-	rm -f $(BIN) $(OBJ)
+	rm -f $(BIN) $(TBIN) $(OBJ)
