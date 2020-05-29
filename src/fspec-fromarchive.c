@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <archive.h>
-#include <assert.h>
 #include <err.h>
 #include <archive_entry.h>
 
@@ -49,7 +48,8 @@ main (int argc, char **argv)
     }
 
     a = archive_read_new();
-    assert(a);
+    if(!a)
+        errx(1, "alloc fail");
 
 #if defined(IN_FORMAT_CPIO)
     archive_read_support_format_cpio(a);
@@ -89,7 +89,9 @@ main (int argc, char **argv)
 
         if (archive_entry_filetype(entry) == AE_IFLNK) {
             const char *link = archive_entry_symlink(entry);
-            assert(link != NULL);
+            if (link == NULL)
+                errx(1, "archive header link missing target");
+
             if (strchr(path, '\n'))
                 errx(1, "link target contains new line");
 

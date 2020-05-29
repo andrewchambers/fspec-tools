@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <err.h>
 #include <archive.h>
 #include <archive_entry.h>
@@ -49,8 +48,8 @@ main(int argc, char **argv)
 
     a = archive_write_new();
     entry = archive_entry_new();
-    assert(a);
-    assert(entry);
+    if (!a || !entry)
+        errx(1, "alloc failure");
 #if defined(OUT_FORMAT_CPIO)
     archive_write_set_format_cpio(a);
 #elif defined(OUT_FORMAT_TAR)
