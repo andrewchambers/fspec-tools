@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <archive.h>
 #include <err.h>
+#include <errno.h>
 #include <archive_entry.h>
 
 static void
@@ -34,7 +35,8 @@ main (int argc, char **argv)
     ssize_t size;
     struct archive *a = NULL;
     struct archive_entry *entry = NULL;
-    char * data_dir = NULL;
+    FILE *data = NULL;
+    char *data_dir = NULL;
     char buff[4096];
 
     while ((opt = getopt(argc, argv, "d:")) != -1) {
@@ -46,6 +48,15 @@ main (int argc, char **argv)
             usage(argv[0]);
             break;
         }
+    }
+
+    if (data_dir) {
+        if (strchr(data_dir, '\n'))
+            errx(1, "data dir contains new line");
+
+        r = mkdir(data_dir, 0755);
+        if (r == -1 && errno != EEXIST)
+            err(1, "unable to create %s", data_dir);
     }
 
     a = archive_read_new();
@@ -102,9 +113,21 @@ main (int argc, char **argv)
         if (archive_entry_filetype(entry) == AE_IFBLK || archive_entry_filetype(entry) == AE_IFCHR)
             printf("devnum=%llu\n", (long long unsigned)archive_entry_rdev(entry));
 
-        if (data_dir) {
-            fprintf(stderr, "-d is unimplemented");
-            exit(1);
+        if (data_dir && archive_entry_filetype(entry) == AE_IFREG) {
+            char tmppath[2048];
+            int n = snprintf(tmppath, sizeof(tmppath), "%s/XXXXXX", data_dir);
+            if (n < 0 || n == (sizeof(tmppath)))
+                errx(1, "data dir path too long");
+
+            int tmpfd = mkstemp(tmppath);
+            if (tmpfd == -1)
+                err(1, "unable to create temp file");
+
+            printf("source=%s\n", tmppath);
+
+            data = fdopen(tmpfd, "w+");
+            if (!data)
+                err(1, "unable to open temporary file");
         }
 
         while (1) {
@@ -113,6 +136,16 @@ main (int argc, char **argv)
                 errx(1, "archive read failed: %s", archive_error_string(a));
             if (size == 0)
                 break;
+
+            if (data)
+                if (fwrite(buff, 1, size, data) != size)
+                    errx(1, "short write");
+        }
+
+        if (data) {
+            if (ferror(data) || fclose(data) != 0)
+                errx(1, "io error");
+            data = NULL;
         }
 
         puts("");
