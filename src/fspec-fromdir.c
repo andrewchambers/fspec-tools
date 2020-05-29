@@ -1,4 +1,5 @@
 #define _XOPEN_SOURCE 500
+#include <sys/stat.h>
 #include <ftw.h>
 #include <limits.h>
 #include <unistd.h>
