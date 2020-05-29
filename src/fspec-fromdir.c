@@ -26,18 +26,6 @@ filetype(mode_t st_mode)
 }
 
 static int
-isdefaultmode(mode_t st_mode)
-{
-    int masked = st_mode & ~S_IFMT;
-    return (S_ISDIR(st_mode)  && masked == 0755)
-        || (S_ISLNK(st_mode)  && masked == 0755)
-        || (S_ISREG(st_mode)  && masked == 0644)
-        || (S_ISFIFO(st_mode) && masked == 0644)
-        || (S_ISBLK(st_mode)  && masked == 0600)
-        || (S_ISCHR(st_mode)  && masked == 0600);
-}
-
-static int
 printfspec(const char *fpath, const struct stat *sb,
             int tflag, struct FTW *ftwbuf)
 {
@@ -49,9 +37,7 @@ printfspec(const char *fpath, const struct stat *sb,
 
     printf("%s%s\n", prefix, fpath+2);
     printf("type=%s\n", filetype(sb->st_mode));
-
-    if (!isdefaultmode(sb->st_mode))
-        printf("mode=%04o\n", sb->st_mode & ~S_IFMT);
+    printf("mode=%04o\n", sb->st_mode & ~S_IFMT);
 
     if (!root_owned) {
         if (sb->st_uid != 0)

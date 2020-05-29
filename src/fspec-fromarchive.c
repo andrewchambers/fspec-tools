@@ -32,17 +32,6 @@ filetype(__LA_MODE_T ty)
     exit(1);
 }
 
-static int
-isdefaultmode(__LA_MODE_T ty, int mode)
-{
-    return (ty == AE_IFDIR && mode == 0755)
-        || (ty == AE_IFLNK && mode == 0755)
-        || (ty == AE_IFREG && mode == 0644)
-        || (ty == AE_IFIFO && mode == 0644)
-        || (ty == AE_IFBLK && mode == 0600)
-        || (ty == AE_IFCHR && mode == 0600);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -96,9 +85,7 @@ main (int argc, char **argv)
 
         printf("%s\n", path);
         printf("type=%s\n", filetype(archive_entry_filetype(entry)));
-
-        if(!isdefaultmode(archive_entry_filetype(entry), archive_entry_perm(entry)))
-            printf("mode=%04o\n", archive_entry_perm(entry));
+        printf("mode=%04o\n", archive_entry_perm(entry));
 
         if (archive_entry_uid(entry) != 0)
             printf("uid=%lld\n", (long long)archive_entry_uid(entry));
