@@ -15,19 +15,14 @@ usage(char *prog) {
 static const char *
 filetype(__LA_MODE_T ty)
 {
-    if (ty == AE_IFREG)
-        return "reg";
-    if (ty == AE_IFDIR)
-        return "dir";
-    if (ty == AE_IFLNK)
-        return "sym";
-    if (ty == AE_IFIFO)
-        return "fifo";
-    if (ty == AE_IFBLK)
-        return "blockdev";
-    if (ty == AE_IFCHR)
-        return "chardev";
-
+    switch (ty) {
+    case AE_IFREG: return "reg";
+    case AE_IFDIR: return "dir";
+    case AE_IFLNK: return "sym";
+    case AE_IFIFO: return "fifo";
+    case AE_IFBLK: return "blockdev";
+    case AE_IFCHR: return "chardev";
+    }
     fprintf(stderr, "unknown file type '%d'\n", ty);
     exit(1);
 }

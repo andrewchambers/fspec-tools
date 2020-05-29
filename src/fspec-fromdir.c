@@ -14,15 +14,17 @@ int absolute = 0;
 char *prefix = "";
 
 static const char *
-filetype(mode_t st_mode)
+filetype(mode_t mode)
 {
-    if (S_ISDIR(st_mode))  return "dir";
-    if (S_ISREG(st_mode))  return "reg";
-    if (S_ISLNK(st_mode))  return "sym";
-    if (S_ISFIFO(st_mode)) return "fifo";
-    if (S_ISBLK(st_mode))  return "blockdev";
-    if (S_ISCHR(st_mode))  return "chardev";
-    errx(1, "unknown file type mode '%o'", st_mode);
+    switch (mode & S_IFMT) {
+    case S_IFDIR: return "dir";
+    case S_IFREG: return "reg";
+    case S_IFLNK: return "sym";
+    case S_IFIFO: return "fifo";
+    case S_IFBLK: return "blockdev";
+    case S_IFCHR: return "chardev";
+    }
+    errx(1, "unknown file type '%#o'", mode);
 }
 
 static int
