@@ -6,8 +6,6 @@
 #include <err.h>
 #include <archive_entry.h>
 
-static struct archive *a = NULL;
-
 static void
 usage(char *prog) {
     printf("%s [-d DATADIR]\n", prog);
@@ -50,6 +48,7 @@ main (int argc, char **argv)
 {
     int r, opt;
     ssize_t size;
+    struct archive *a = NULL;
     struct archive_entry *entry = NULL;
     char * data_dir = NULL;
     char buff[4096];

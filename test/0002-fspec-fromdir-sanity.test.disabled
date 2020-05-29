@@ -8,8 +8,5 @@ chmod +x foo/b.sh
 mkfifo c
 
 fspec-fromdir -r ./foo > a.fspec
-# XXX Sort entries portable
-tar -C foo -f . | fspec-fromtar > b.fspec
-
+tar -C foo -cf - a.txt b.sh c | fspec-fromtar > b.fspec
 diff -u a.fspec b.fspec
-
