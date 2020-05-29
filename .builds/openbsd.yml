@@ -7,4 +7,4 @@ tasks:
   - build: |
       cd fspec-tools
       make test "CFLAGS=$(pkg-config --cflags libarchive)"\
-                "LDFLAGS=$(pkg-config --libs libarchive)"
+                "LDLIBS=$(pkg-config --libs libarchive)"

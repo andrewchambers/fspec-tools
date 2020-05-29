@@ -9,7 +9,7 @@ then
 fi
 
 source_root="$(pwd)"
-export PATH="$source_root/test:$source_root/src:$PATH"
+export PATH="$source_root/src:$PATH"
 scratch="$(mktemp -d)"
 
 finish () {

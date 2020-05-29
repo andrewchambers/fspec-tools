@@ -8,12 +8,10 @@ cat <<EOF > t.fspec
 bar.txt
 type=reg
 mode=$(fmode foo/bar.txt)
-uid=$(id -u)
-gid=$(id -g)
 
 EOF
 
-fspec-fromdir ./foo > r.fspec
+fspec-fromdir -r ./foo > r.fspec
 diff -u t.fspec r.fspec
 
 cat <<EOF > t.fspec
@@ -35,12 +33,10 @@ cat <<EOF > t.fspec
 bar
 type=dir
 mode=$(fmode foo/bar)
-uid=$(id -u)
-gid=$(id -g)
 
 EOF
 
-fspec-fromdir ./foo > r.fspec
+fspec-fromdir -r ./foo > r.fspec
 diff -u t.fspec r.fspec
 
 
