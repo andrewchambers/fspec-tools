@@ -26,6 +26,18 @@ filetype(int tflag)
 }
 
 static int
+isdefaultmode(mode_t st_mode)
+{
+    int masked = st_mode & ~S_IFMT;
+    return (S_ISDIR(st_mode)  && masked == 0755)
+        || (S_ISLNK(st_mode)  && masked == 0755)
+        || (S_ISREG(st_mode)  && masked == 0644)
+        || (S_ISFIFO(st_mode) && masked == 0644)
+        || (S_ISBLK(st_mode)  && masked == 0600)
+        || (S_ISCHR(st_mode)  && masked == 0600);
+}
+
+static int
 printfspec(const char *fpath, const struct stat *sb,
             int tflag, struct FTW *ftwbuf)
 {
@@ -37,7 +49,10 @@ printfspec(const char *fpath, const struct stat *sb,
 
     printf("%s%s\n", prefix, fpath+2);
     printf("type=%s\n", filetype(tflag));
-    printf("mode=%04o\n", sb->st_mode & ~S_IFMT);
+
+    if (!isdefaultmode(sb->st_mode))
+        printf("mode=%04o\n", sb->st_mode & ~S_IFMT);
+
     if (!root_owned) {
         if (sb->st_uid != 0)
             printf("uid=%d\n", sb->st_uid);
@@ -56,6 +71,7 @@ printfspec(const char *fpath, const struct stat *sb,
             errx(1, "link target contains new line");
         printf("link=%s\n", pathbuf);
     }
+
     if (tflag == FTW_F && absolute) {
         if (realpath(fpath, pathbuf) == NULL)
             err(1, "realpath of %s failed", fpath);

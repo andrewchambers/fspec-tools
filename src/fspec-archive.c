@@ -94,7 +94,7 @@ main(int argc, char **argv)
                 set_default_mode = 0;
                 mode = strtol(line + 5, NULL, 8);
             } else if (strncmp(line, "devnum=", 7) == 0) {
-                archive_entry_set_dev(entry, strtol(line + 7, NULL, 10));
+                archive_entry_set_rdev(entry, strtol(line + 7, NULL, 10));
             } else if (strncmp(line, "type=", 5) == 0) {
                 const char *t = line + 5;
 

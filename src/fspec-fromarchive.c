@@ -119,7 +119,7 @@ main (int argc, char **argv)
         }
 
         if (archive_entry_filetype(entry) == AE_IFBLK || archive_entry_filetype(entry) == AE_IFCHR)
-            printf("devnum=%llu\n", (long long unsigned)archive_entry_dev(entry));
+            printf("devnum=%llu\n", (long long unsigned)archive_entry_rdev(entry));
 
         if (data_dir) {
             fprintf(stderr, "-d is unimplemented");
