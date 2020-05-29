@@ -19,6 +19,12 @@ filetype(const char *type)
         return AE_IFDIR;
     if (strcmp(type, "sym") == 0)
         return AE_IFLNK;
+    if (strcmp(type, "fifo") == 0)
+        return AE_IFIFO;
+    if (strcmp(type, "blockdev") == 0)
+        return AE_IFBLK;
+    if (strcmp(type, "chardev") == 0)
+        return AE_IFCHR;
     fprintf(stderr, "unknown file type '%s'\n", type);
     exit(1);
 }
@@ -26,12 +32,14 @@ filetype(const char *type)
 static int
 defaultmode(const char *type)
 {
-    if (strcmp(type, "reg") == 0)
-        return 0644;
     if (strcmp(type, "dir") == 0)
         return 0755;
     if (strcmp(type, "sym") == 0)
         return 0777;
+    if (strcmp(type, "reg") == 0 || strcmp(type, "fifo") == 0)
+        return 0644;
+    if (strcmp(type, "blockdev") == 0 || strcmp(type, "chardev") == 0)
+        return 0600;
     fprintf(stderr, "unknown file type '%s'\n", type);
     exit(1);
 }
@@ -85,6 +93,8 @@ main(int argc, char **argv)
             } else if (strncmp(line, "mode=", 5) == 0) {
                 set_default_mode = 0;
                 mode = strtol(line + 5, NULL, 8);
+            } else if (strncmp(line, "devnum=", 7) == 0) {
+                archive_entry_set_dev(entry, strtol(line + 7, NULL, 10));
             } else if (strncmp(line, "type=", 5) == 0) {
                 const char *t = line + 5;
 
