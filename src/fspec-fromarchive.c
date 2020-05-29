@@ -23,8 +23,26 @@ filetype(__LA_MODE_T ty)
         return "dir";
     if (ty == AE_IFLNK)
         return "sym";
+    if (ty == AE_IFIFO)
+        return "fifo";
+    if (ty == AE_IFBLK)
+        return "blockdev";
+    if (ty == AE_IFCHR)
+        return "chardev";
+
     fprintf(stderr, "unknown file type '%d'\n", ty);
     exit(1);
+}
+
+static int
+isdefaultmode(__LA_MODE_T ty, int mode)
+{
+    return (ty == AE_IFDIR && mode == 0755)
+        || (ty == AE_IFLNK && mode == 0755)
+        || (ty == AE_IFREG && mode == 0644)
+        || (ty == AE_IFIFO && mode == 0644)
+        || (ty == AE_IFBLK && mode == 0600)
+        || (ty == AE_IFCHR && mode == 0600);
 }
 
 int
@@ -79,7 +97,9 @@ main (int argc, char **argv)
 
         printf("%s\n", path);
         printf("type=%s\n", filetype(archive_entry_filetype(entry)));
-        printf("mode=%04o\n", archive_entry_perm(entry));
+
+        if(!isdefaultmode(archive_entry_filetype(entry), archive_entry_perm(entry)))
+            printf("mode=%04o\n", archive_entry_perm(entry));
 
         if (archive_entry_uid(entry) != 0)
             printf("uid=%lld\n", (long long)archive_entry_uid(entry));
@@ -97,6 +117,9 @@ main (int argc, char **argv)
 
            printf("link=%s\n", link);
         }
+
+        if (archive_entry_filetype(entry) == AE_IFBLK || archive_entry_filetype(entry) == AE_IFCHR)
+            printf("devnum=%llu\n", (long long unsigned)archive_entry_dev(entry));
 
         if (data_dir) {
             fprintf(stderr, "-d is unimplemented");

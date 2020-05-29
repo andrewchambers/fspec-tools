@@ -2,7 +2,7 @@
 
 set -eux
 
-fspec-tar <<EOF | tar -xf -
+cat <<EOF > t.fspec
 foo
 type=reg
 mode=0700
@@ -10,35 +10,24 @@ mode=0700
 bar
 type=reg
 
-baz
+baz/
 type=dir
 
 fif
 type=fifo
-EOF
 
-test -f foo
-test -f bar
-test -d baz
-test -p fif
-
-test "0700" = "$(fmode foo)"
-test "0644" = "$(fmode bar)"
-test "0755" = "$(fmode baz)"
-test "0644" = "$(fmode fif)"
-
-fspec-tar <<EOF | tar -tf - > out.list
-/dev
+dev/
 type=dir
 
-/dev/null
+dev/null
 type=chardev
-devnum=123
+devnum=1
 
-/dev/sda
+dev/sda
 type=blockdev
-devnum=456
+devnum=2
 
 EOF
 
-test "$(wc -l < out.list)" = 3
+fspec-tar < t.fspec | fspec-fromtar > out.fspec
+diff -u t.fspec out.fspec

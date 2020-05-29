@@ -13,15 +13,12 @@ BIN=\
 	src/fspec-fromcpio\
 	src/fspec-fromdir
 
-TBIN=src/fmode
-
 OBJ=\
 	src/fspec-tar.o\
 	src/fspec-cpio.o\
 	src/fspec-fromtar.o\
 	src/fspec-fromcpio.o\
-	src/fspec-fromdir.o \
-	src/fmode.o
+	src/fspec-fromdir.o
 
 .PHONY: all
 all: $(BIN)
@@ -41,14 +38,11 @@ src/fspec-fromcpio.o: src/fspec-fromarchive.c
 src/fspec-fromdir.o: src/fspec-fromdir.c
 	$(CC) $(CFLAGS) -c -o $@ src/fspec-fromdir.c
 
-src/fmode.o: src/fmode.c
-	$(CC) $(CFLAGS) -c -o $@ src/fmode.c
-
 .o:
 	$(CC) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
 .PHONY: test
-test: $(BIN) $(TBIN)
+test: $(BIN)
 	./test/run-all
 
 .PHONY: install
@@ -58,4 +52,4 @@ install: all
 
 .PHONY: clean
 clean:
-	rm -f $(BIN) $(TBIN) $(OBJ)
+	rm -f $(BIN) $(OBJ)
