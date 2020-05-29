@@ -29,5 +29,7 @@ devnum=2
 
 EOF
 
+fspec-cpio < t.fspec | fspec-fromcpio > out.fspec
+diff -u t.fspec out.fspec
 fspec-tar < t.fspec | fspec-fromtar > out.fspec
 diff -u t.fspec out.fspec
