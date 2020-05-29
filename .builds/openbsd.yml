@@ -1,4 +1,4 @@
-image: openbsd/latest
+image: openbsd/6.7
 packages:
   - libarchive
 sources:
