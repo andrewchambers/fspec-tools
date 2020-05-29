@@ -29,9 +29,42 @@ devnum=2
 
 EOF
 
-fspec-tar < t.fspec | fspec-fromtar > out.fspec
-diff -u t.fspec out.fspec
+cat <<EOF > want.fspec
+foo
+type=reg
+mode=0700
+
+bar
+type=reg
+mode=0644
+
+baz/
+type=dir
+mode=0755
+
+fif
+type=fifo
+mode=0644
+
+dev/
+type=dir
+mode=0755
+
+dev/null
+type=chardev
+mode=0600
+devnum=1
+
+dev/sda
+type=blockdev
+mode=0600
+devnum=2
+
+EOF
+
+fspec-tar < t.fspec | fspec-fromtar > got.fspec
+diff -u want.fspec got.fspec
 
 # XXX fixme
-#fspec-cpio < t.fspec | fspec-fromcpio > out.fspec
-#diff -u t.fspec out.fspec
+#fspec-cpio < t.fspec | fspec-fromcpio > got.fspec
+#diff -u want.fspec got.fspec
