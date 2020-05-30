@@ -11,7 +11,8 @@ BIN=\
 	src/fspec-cpio\
 	src/fspec-fromtar\
 	src/fspec-fromcpio\
-	src/fspec-fromdir
+	src/fspec-fromdir\
+	src/fspec-filldirs
 
 OBJ=\
 	src/fspec-tar.o\

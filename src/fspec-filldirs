@@ -1,0 +1,30 @@
+#!/bin/sh
+
+exec awk -v RS= -v ORS='\n\n' '
+	function printdir(dir) {
+		if (!saw[dir]) {
+			printf "%s\ntype=dir\nmode=0755\n\n", dir
+			saw[dir] = 1
+		}
+	}
+
+	{
+		n = split($1, a, "/")
+		if (!a[n])
+			--n
+		i = 1
+		l = 0
+		if (!a[1]) {
+			printdir("/")
+			++i
+			++l
+		}
+		while (i < n) {
+			l += length(a[i])
+			printdir(substr($1, 1, l))
+			++i
+			++l
+		}
+		print
+	}
+' "$@"
