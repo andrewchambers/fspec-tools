@@ -124,16 +124,14 @@ main(int argc, char **argv)
 
         if (datafd != -1) {
             char buff[4096];
-            int wlen = read(datafd, buff, sizeof(buff));
-            if (wlen < 0)
-                err(1, "read failed");
-            while ( wlen > 0 ) {
-                if (archive_write_data(a, buff, wlen) != wlen)
-                    errx(1, "archive write failed");
-
-                wlen = read(datafd, buff, sizeof(buff));
+            for (;;) {
+                ssize_t wlen = read(datafd, buff, sizeof(buff));
                 if (wlen < 0)
                     err(1, "read failed");
+                if (wlen == 0)
+                    break;
+                if (archive_write_data(a, buff, wlen) != wlen)
+                    errx(1, "archive write failed");
             }
             close(datafd);
             datafd = -1;
