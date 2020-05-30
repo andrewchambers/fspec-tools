@@ -1,85 +1,111 @@
 #define _XOPEN_SOURCE 700
-#include <sys/stat.h>
-#include <ftw.h>
 #include <limits.h>
-#include <unistd.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <err.h>
 
 int root_owned = 0;
 int absolute = 0;
 char *prefix = "";
 
-static const char *
-filetype(mode_t mode)
+static int
+skipdot(const struct dirent *d)
 {
-    switch (mode & S_IFMT) {
-    case S_IFDIR: return "dir";
-    case S_IFREG: return "reg";
-    case S_IFLNK: return "sym";
-    case S_IFIFO: return "fifo";
-    case S_IFBLK: return "blockdev";
-    case S_IFCHR: return "chardev";
-    }
-    errx(1, "unknown file type '%#o'", mode);
+    return strcmp(d->d_name, ".") != 0 && strcmp(d->d_name, "..") != 0;
 }
 
-static int
-printfspec(const char *fpath, const struct stat *sb,
-            int tflag, struct FTW *ftwbuf)
+static void printentry(char *, size_t, size_t);
+
+static void
+recurse(char *path, size_t len, size_t max)
 {
-    int len;
-    char pathbuf[PATH_MAX];
+    struct dirent **d;
+    int dlen;
 
-    if (strcmp(fpath, ".") == 0)
-        return 0;
-
-    printf("%s%s\n", prefix, fpath+2);
-    printf("type=%s\n", filetype(sb->st_mode));
-    printf("mode=%04o\n", sb->st_mode & ~S_IFMT);
-
-    if (!root_owned) {
-        if (sb->st_uid != 0)
-            printf("uid=%d\n", sb->st_uid);
-        if (sb->st_gid != 0)
-            printf("gid=%d\n", sb->st_gid);
+    dlen = scandir(path, &d, skipdot, alphasort);
+    if (dlen < 0)
+        err(1, "scandir %s", path);
+    if (len == max)
+        errx(1, "path is too long");
+    path[len++] = '/';
+    for (int i = 0; i < dlen; ++i) {
+        char *end = memccpy(path + len, d[i]->d_name, '\0', max - len);
+        if (!end)
+            errx(1, "path is too long");
+        printentry(path, end - path - 1, max);
+        free(d[i]);
     }
+    free(d);
+}
 
-    if (S_ISLNK(sb->st_mode)) {
-        len = readlink(fpath, pathbuf, sizeof(pathbuf));
-        if (len < 0)
-            err(1, "readlink of %s failed", fpath);
-        if (len == sizeof(pathbuf))
-            errx(1, "link target of %s too long", fpath);
-        pathbuf[len] = 0;
-        if (strchr(pathbuf, '\n'))
+static void
+printentry(char *path, size_t len, size_t max)
+{
+    static char buf[PATH_MAX];
+    ssize_t buflen;
+    struct stat st;
+
+    if (stat(path, &st) != 0)
+        err(1, "stat %s", path);
+
+    printf("%s%s\n", prefix, path + 2);
+
+    switch (st.st_mode & S_IFMT) {
+    case S_IFREG:
+        puts("type=reg");
+        if (absolute) {
+            if (realpath(path, buf) == NULL)
+                err(1, "realpath of %s failed", path);
+            if (strchr(buf, '\n'))
+                errx(1, "file path contains new line, aborting");
+            printf("source=%s\n", buf);
+        }
+        break;
+    case S_IFLNK:
+        puts("type=sym");
+        buflen = readlink(path, buf, sizeof(buf));
+        if (buflen < 0)
+            err(1, "readlink of %s failed", path);
+        if (buflen >= sizeof(buf))
+            errx(1, "link target of %s too long", path);
+        buf[buflen] = 0;
+        if (strchr(buf, '\n'))
             errx(1, "link target contains new line");
-        printf("link=%s\n", pathbuf);
+        printf("link=%s\n", buf);
+        break;
+    case S_IFCHR:
+    case S_IFBLK:
+        printf("type=%s\n", S_ISCHR(st.st_mode) ? "chardev" : "blockdev");
+        printf("devnum=%llu\n", (long long unsigned)st.st_rdev);
+        break;
+    case S_IFDIR:
+        puts("type=dir");
+        break;
     }
 
-    if (S_ISREG(sb->st_mode) && absolute) {
-        if (realpath(fpath, pathbuf) == NULL)
-            err(1, "realpath of %s failed", fpath);
-        if (strchr(pathbuf, '\n'))
-            errx(1, "file path contains new line, aborting");
-        printf("source=%s\n", pathbuf);
+    printf("mode=%04o\n", st.st_mode & ~S_IFMT);
+    if (!root_owned) {
+        if (st.st_uid != 0)
+            printf("uid=%d\n", st.st_uid);
+        if (st.st_gid != 0)
+            printf("gid=%d\n", st.st_gid);
     }
+    putchar('\n');
 
-    if (S_ISBLK(sb->st_mode) || S_ISCHR(sb->st_mode))
-        printf("devnum=%llu\n", (long long unsigned)sb->st_rdev);
-
-    puts("");
-    return 0;
+    if (S_ISDIR(st.st_mode))
+        recurse(path, len, max);
 }
 
 int
 main(int argc, char **argv)
 {
     int opt;
-    const char *dir = ".";
+    char path[PATH_MAX] = ".";
 
     while ((opt = getopt(argc, argv, "p:ar")) != -1) {
         switch (opt) {
@@ -92,20 +118,16 @@ main(int argc, char **argv)
         case 'r':
            root_owned = 1;
            break;
-        default: 
+        default:
            fprintf(stderr, "Usage: %s [-p PREFIX] [-a] [-r] [PATH]\n", argv[0]);
            exit(EXIT_FAILURE);
         }
     }
 
-    if (optind < argc)
-        dir = argv[optind];
+    if (optind < argc && chdir(argv[optind]) != 0)
+        err(1, "chdir %s", argv[optind]);
 
-    if (chdir(dir) != 0)
-        err(1, "chdir failed");
-
-    if (nftw(".", printfspec, 20, FTW_PHYS) < 0)
-        err(1, "walk of %s failed", dir);
+    recurse(path, 1, sizeof(path));
 
     if (ferror(stdout))
         errx(1, "io error");

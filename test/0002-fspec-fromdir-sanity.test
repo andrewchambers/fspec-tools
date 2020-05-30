@@ -1,0 +1,25 @@
+#! /bin/sh
+
+set -eux
+
+umask 022
+
+mkdir foo
+touch foo/a.txt
+touch foo/b.sh
+chmod +x foo/b.sh
+mkfifo c
+
+cat <<EOF > want.fspec
+a.txt
+type=reg
+mode=0644
+
+b.sh
+type=reg
+mode=0755
+
+EOF
+
+fspec-fromdir -r ./foo > got.fspec
+diff -u want.fspec got.fspec
