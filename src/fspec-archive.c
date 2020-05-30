@@ -132,7 +132,7 @@ main(int argc, char **argv)
                     errx(1, "archive write failed");
 
                 wlen = read(datafd, buff, sizeof(buff));
-                if (wlen >= 0)
+                if (wlen < 0)
                     err(1, "read failed");
             }
             close(datafd);
