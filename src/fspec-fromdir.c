@@ -130,7 +130,7 @@ main(int argc, char **argv)
 
     recurse(path, 1, sizeof(path));
 
-    if (ferror(stdout))
+    if (fflush(stdout) != 0 || ferror(stdout))
         errx(1, "io error");
     return 0;
 }
