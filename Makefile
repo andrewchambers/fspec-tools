@@ -21,6 +21,15 @@ OBJ=\
 	src/fspec-fromcpio.o\
 	src/fspec-fromdir.o
 
+CLEAN=\
+	src/fspec-tar\
+	src/fspec-cpio\
+	src/fspec-fromtar\
+	src/fspec-fromcpio\
+	src/fspec-fromiso\
+	src/fspec-fromdir\
+	$(OBJ)
+
 .PHONY: all
 all: $(BIN)
 
@@ -53,4 +62,4 @@ install: all
 
 .PHONY: clean
 clean:
-	rm -f $(BIN) $(OBJ)
+	rm -f $(CLEAN)
