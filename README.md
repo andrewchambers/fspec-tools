@@ -50,13 +50,13 @@ The following attributes are available:
 ## Examples
 ```
 $ cat fs.fspec
-foo
+/foo
 type=reg
 uid=123
 gid=123
 source=./README.md
 
-bar
+/bar
 type=sym
 target=bar
 
