@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <libgen.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -25,8 +26,7 @@ filetype(const char *type)
         return AE_IFBLK;
     if (strcmp(type, "chardev") == 0)
         return AE_IFCHR;
-    fprintf(stderr, "unknown file type '%s'\n", type);
-    exit(1);
+    errx(1, "unknown file type '%s'", type);
 }
 
 static int
@@ -40,13 +40,13 @@ defaultmode(const char *type)
         return 0644;
     if (strcmp(type, "blockdev") == 0 || strcmp(type, "chardev") == 0)
         return 0600;
-    fprintf(stderr, "unknown file type '%s'\n", type);
-    exit(1);
+    errx(1, "unknown file type '%s'", type);
 }
 
 int
 main(int argc, char **argv)
 {
+    FILE *input = NULL;
     char *line = NULL;
     size_t len = 0;
     ssize_t n = 0;
@@ -65,6 +65,19 @@ main(int argc, char **argv)
 #else
 #error "define OUT_FORMAT_CPIO or OUT_FORMAT_TAR"
 #endif
+
+    if (argc == 1) {
+        input = stdin;
+    } else if (argc == 2) {
+        input = fopen(argv[1], "r");
+        if (!input)
+            err(1, "unable to open input %s", argv[1]);
+        if (chdir(dirname(argv[1])) < 0)
+            err(1, "unable to chdir");
+    } else {
+        errx(1, "expected 0 or 1 arguments");
+    }
+
     if (archive_write_open_filename(a, NULL) != ARCHIVE_OK)
         errx(1, "archive open failed: %s", archive_error_string(a));
 
@@ -73,7 +86,7 @@ main(int argc, char **argv)
         int mode = 0;
 
         /* skip blank lines */
-        while ((n = getline(&line, &len, stdin)) == 1)
+        while ((n = getline(&line, &len, input)) == 1)
             ;
         if (n <= 0)
             break;
@@ -83,7 +96,7 @@ main(int argc, char **argv)
         archive_entry_set_pathname(entry, line[0] == '/' ? line + 1 : line);
         archive_entry_set_size(entry, 0);
 
-        while ((n = getline(&line, &len, stdin)) > 1) {
+        while ((n = getline(&line, &len, input)) > 1) {
             if (line[n - 1] == '\n')
                 line[n - 1] = '\0';
             if (strncmp(line, "uid=", 4) == 0) {
