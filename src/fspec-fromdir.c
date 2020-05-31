@@ -16,7 +16,7 @@ char *prefix = "";
 static void
 usage(const char *argv0)
 {
-   fprintf(stderr, "usage: %s [-p prefix] [-a] [-r] [dir]\n", argv0 ? argv0 : "fspec-fromdir");
+   fprintf(stderr, "usage: %s [-C dir] [-p prefix] [-a] [-r] [path...]\n", argv0 ? argv0 : "fspec-fromdir");
    exit(1);
 }
 
@@ -39,7 +39,8 @@ recurse(char *path, size_t len, size_t max)
         err(1, "scandir %s", path);
     if (len == max)
         errx(1, "path is too long");
-    path[len++] = '/';
+    if (len)
+        path[len++] = '/';
     for (int i = 0; i < dlen; ++i) {
         char *end = memccpy(path + len, d[i]->d_name, '\0', max - len);
         if (!end)
@@ -60,7 +61,7 @@ printentry(char *path, size_t len, size_t max)
     if (lstat(path, &st) != 0)
         err(1, "stat %s", path);
 
-    printf("/%s%s\n", prefix, path + 2);
+    printf("/%s%s\n", prefix, path);
 
     switch (st.st_mode & S_IFMT) {
     case S_IFREG:
@@ -114,10 +115,14 @@ int
 main(int argc, char **argv)
 {
     int opt;
-    char path[PATH_MAX] = ".";
+    char path[PATH_MAX];
 
-    while ((opt = getopt(argc, argv, "p:ar")) != -1) {
+    while ((opt = getopt(argc, argv, "C:p:ar")) != -1) {
         switch (opt) {
+        case 'C':
+            if (chdir(optarg) != 0)
+                err(1, "chdir %s", optarg);
+            break;
         case 'p':
            prefix = optarg;
            break;
@@ -132,10 +137,19 @@ main(int argc, char **argv)
         }
     }
 
-    if (optind < argc && chdir(argv[optind]) != 0)
-        err(1, "chdir %s", argv[optind]);
-
-    recurse(path, 1, sizeof(path));
+    if (optind < argc) {
+        for (; optind < argc; ++optind) {
+            char *end = memccpy(path, argv[optind], '\0', sizeof(path));
+            if (!end)
+                errx(1, "path is too long");
+            if (path[0] == '/')
+                errx(1, "paths must be relative");
+            printentry(path, end - path - 1, sizeof(path));
+        }
+    } else {
+        strcpy(path, ".");
+        recurse(path, 0, sizeof(path));
+    }
 
     if (fflush(stdout) != 0 || ferror(stdout))
         errx(1, "io error");
