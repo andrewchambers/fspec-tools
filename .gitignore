@@ -1,6 +1,6 @@
 *.o
+/src/fspec-archive
 /src/fspec-tar
 /src/fspec-cpio
-/src/fspec-fomtar
-/src/fspec-fomcpop
+/src/fspec-fromarchive
 /src/fspec-fromdir

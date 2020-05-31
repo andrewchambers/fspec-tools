@@ -63,14 +63,6 @@ main (int argc, char **argv)
     if (!a)
         errx(1, "alloc fail");
 
-#if defined(IN_FORMAT_CPIO)
-    archive_read_support_format_cpio(a);
-#elif defined(IN_FORMAT_TAR)
-    archive_read_support_format_tar(a);
-    archive_read_support_format_gnutar(a);
-#else
-#error "define IN_FORMAT_CPIO or IN_FORMAT_TAR"
-#endif
     archive_read_support_format_all(a);
     r = archive_read_open_filename(a, NULL, 16384);
     if (r != ARCHIVE_OK)
