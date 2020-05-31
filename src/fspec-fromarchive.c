@@ -60,7 +60,7 @@ main (int argc, char **argv)
     }
 
     a = archive_read_new();
-    if(!a)
+    if (!a)
         errx(1, "alloc fail");
 
 #if defined(IN_FORMAT_CPIO)
@@ -80,7 +80,7 @@ main (int argc, char **argv)
         r = archive_read_next_header(a, &entry);
         if (r == ARCHIVE_EOF)
             break;
-        if(r != ARCHIVE_OK)
+        if (r != ARCHIVE_OK)
             errx(1, "archive next header failed: %s", archive_error_string(a));
 
         const char *path = archive_entry_pathname(entry);
@@ -132,7 +132,7 @@ main (int argc, char **argv)
 
         while (1) {
             size = archive_read_data(a, buff, sizeof(buff));
-            if(size < 0)
+            if (size < 0)
                 errx(1, "archive read failed: %s", archive_error_string(a));
             if (size == 0)
                 break;
@@ -153,7 +153,7 @@ main (int argc, char **argv)
 
     archive_read_free(a);
 
-    if(fflush(stdout) != 0 || ferror(stdout))
+    if (fflush(stdout) != 0 || ferror(stdout))
         errx(1, "io error");
 
     return 0;

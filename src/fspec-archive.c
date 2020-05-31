@@ -119,7 +119,7 @@ main(int argc, char **argv)
         }
         archive_entry_set_perm(entry, mode);
 
-        if(archive_write_header(a, entry) != ARCHIVE_OK)
+        if (archive_write_header(a, entry) != ARCHIVE_OK)
             errx(1, "archive write header failed: %s", archive_error_string(a));
 
         if (datafd != -1) {
@@ -140,7 +140,7 @@ main(int argc, char **argv)
         archive_entry_clear(entry);
     } while (n != -1);
 
-    if(ferror(stdin))
+    if (ferror(stdin))
         err(1, "io error");
     
     if (archive_write_close(a) != ARCHIVE_OK)
