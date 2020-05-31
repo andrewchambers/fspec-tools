@@ -80,7 +80,7 @@ main(int argc, char **argv)
         if (line[n - 1] == '\n')
             line[n - 1] = '\0';
 
-        archive_entry_set_pathname(entry, line);
+        archive_entry_set_pathname(entry, line[0] == '/' ? line + 1 : line);
         archive_entry_set_size(entry, 0);
 
         while ((n = getline(&line, &len, stdin)) > 1) {
