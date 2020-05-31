@@ -57,7 +57,7 @@ printentry(char *path, size_t len, size_t max)
     ssize_t buflen;
     struct stat st;
 
-    if (stat(path, &st) != 0)
+    if (lstat(path, &st) != 0)
         err(1, "stat %s", path);
 
     printf("%s%s\n", prefix, path + 2);

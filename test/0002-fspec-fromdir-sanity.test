@@ -9,6 +9,7 @@ touch foo/a.txt
 touch foo/b.sh
 chmod +x foo/b.sh
 mkfifo foo/c
+ln -s some/target foo/d
 
 cat <<EOF > want.fspec
 a.txt
@@ -22,6 +23,11 @@ mode=0755
 c
 type=fifo
 mode=0644
+
+d
+type=sym
+target=some/target
+mode=0777
 
 EOF
 
