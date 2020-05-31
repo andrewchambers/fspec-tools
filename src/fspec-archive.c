@@ -59,7 +59,7 @@ main(int argc, char **argv)
     if (!a || !entry)
         errx(1, "alloc failure");
 #if defined(OUT_FORMAT_CPIO)
-    archive_write_set_format_cpio(a);
+    archive_write_set_format_cpio_newc(a);
 #elif defined(OUT_FORMAT_TAR)
     archive_write_set_format_pax_restricted(a);
 #else

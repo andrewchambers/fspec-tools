@@ -65,6 +65,5 @@ EOF
 fspec-tar < t.fspec | fspec-fromtar > got.fspec
 diff -u want.fspec got.fspec
 
-# XXX fixme
-#fspec-cpio < t.fspec | fspec-fromcpio > got.fspec
-#diff -u want.fspec got.fspec
+fspec-cpio < t.fspec | fspec-fromcpio > got.fspec
+diff -u want.fspec got.fspec
