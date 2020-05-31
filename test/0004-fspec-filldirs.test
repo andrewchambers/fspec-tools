@@ -1,0 +1,31 @@
+#! /bin/sh
+
+set -eu
+
+fspec-filldirs <<EOF > 1.fspec
+/foo/bar/baz
+type=dir
+mode=0755
+
+EOF
+
+cat <<EOF > e1.fspec
+/
+type=dir
+mode=0755
+
+/foo
+type=dir
+mode=0755
+
+/foo/bar
+type=dir
+mode=0755
+
+/foo/bar/baz
+type=dir
+mode=0755
+
+EOF
+
+diff -u 1.fspec e1.fspec
