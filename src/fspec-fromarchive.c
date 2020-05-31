@@ -89,7 +89,7 @@ main (int argc, char **argv)
         if (strchr(path, '\n'))
             errx(1, "archive entry path contains new line");
 
-        printf("%s\n", path);
+        printf("%s%s\n", path[0] == '/' ? "" : "/", path);
         printf("type=%s\n", filetype(archive_entry_filetype(entry)));
         printf("mode=%04o\n", archive_entry_perm(entry));
 

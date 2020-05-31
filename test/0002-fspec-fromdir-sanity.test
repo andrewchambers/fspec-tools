@@ -12,19 +12,19 @@ mkfifo foo/c
 ln -s some/target foo/d
 
 cat <<EOF > want.fspec
-a.txt
+/a.txt
 type=reg
 mode=0644
 
-b.sh
+/b.sh
 type=reg
 mode=0755
 
-c
+/c
 type=fifo
 mode=0644
 
-d
+/d
 type=sym
 target=some/target
 mode=0777

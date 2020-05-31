@@ -3,59 +3,59 @@
 set -eux
 
 cat <<EOF > t.fspec
-foo
+/foo
 type=reg
 mode=0700
 
-bar
+/bar
 type=reg
 
-baz/
+/baz/
 type=dir
 
-fif
+/fif
 type=fifo
 
-dev/
+/dev/
 type=dir
 
-dev/null
+/dev/null
 type=chardev
 devnum=1
 
-dev/sda
+/dev/sda
 type=blockdev
 devnum=2
 
 EOF
 
 cat <<EOF > want.fspec
-foo
+/foo
 type=reg
 mode=0700
 
-bar
+/bar
 type=reg
 mode=0644
 
-baz/
+/baz/
 type=dir
 mode=0755
 
-fif
+/fif
 type=fifo
 mode=0644
 
-dev/
+/dev/
 type=dir
 mode=0755
 
-dev/null
+/dev/null
 type=chardev
 mode=0600
 devnum=1
 
-dev/sda
+/dev/sda
 type=blockdev
 mode=0600
 devnum=2

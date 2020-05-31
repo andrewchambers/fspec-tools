@@ -4,7 +4,7 @@ set -eux
 
 echo hello > foo.txt
 cat <<EOF > t.fspec
-foo
+/foo
 type=reg
 source=./foo.txt
 
@@ -15,7 +15,7 @@ dataname="$(echo data/*)"
 
 
 cat <<EOF > expected.fspec
-foo
+/foo
 type=reg
 mode=0644
 source=$dataname

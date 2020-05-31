@@ -9,7 +9,7 @@ Tools to create filesystem images from an fspec filesystem specification.
 ```
 fspec     ::= record ("\n" record)* "\n"?
 record    ::= name attribute+
-name      ::= [^\n]+ "\n"
+name      ::= "/" [^\n]* "\n"
 attribute ::= [a-zA-Z0-9_]+ "=" [^\n]+ "\n"
 ```
 
