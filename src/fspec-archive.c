@@ -11,6 +11,13 @@
 #include <archive.h>
 #include <archive_entry.h>
 
+static void
+usage(const char *prog)
+{
+    fprintf(stderr, "usage: %s [-x format]\n", prog ? prog : "fspec-archive");
+    exit(1);
+}
+
 static int
 filetype(const char *type)
 {
@@ -54,6 +61,7 @@ main(int argc, char **argv)
     struct archive *a = NULL;
     struct archive_entry *entry = NULL;
     const char *prog;
+    int opt;
 
     prog = argc ? strrchr(argv[0], '/') : NULL;
     prog = prog ? prog + 1 : argv[0];
@@ -63,25 +71,38 @@ main(int argc, char **argv)
     if (!a || !entry)
         errx(1, "alloc failure");
 
-    if (prog) {
+    while ((opt = getopt(argc, argv, "x:")) != -1) {
+        switch (opt) {
+        case 'x':
+            if (archive_write_set_format_by_name(a, optarg) != ARCHIVE_OK)
+                errx(1, "%s", archive_error_string(a));
+            break;
+        default:
+            usage(prog);
+        }
+    }
+    argc -= optind;
+    argv += optind;
+
+    if (!archive_format(a) && prog) {
         if (strcmp(prog, "fspec-tar") == 0)
             archive_write_set_format_pax_restricted(a);
         else if (strcmp(prog, "fspec-cpio") == 0)
             archive_write_set_format_cpio_newc(a);
     }
     if (!archive_format(a))
-        errx(1, "archive format could not be inferred");
+        errx(1, "archive format could not be inferred, and was not specified explicitly");
 
+    if (argc > 1)
+        usage(prog);
     if (argc == 1) {
-        input = stdin;
-    } else if (argc == 2) {
-        input = fopen(argv[1], "r");
+        input = fopen(argv[0], "r");
         if (!input)
             err(1, "unable to open input %s", argv[1]);
         if (chdir(dirname(argv[1])) < 0)
             err(1, "unable to chdir");
     } else {
-        errx(1, "expected 0 or 1 arguments");
+        input = stdin;
     }
 
     if (archive_write_open_filename(a, NULL) != ARCHIVE_OK)
