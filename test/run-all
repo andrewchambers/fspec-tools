@@ -8,8 +8,6 @@ then
   exit 1
 fi
 
-shift $((OPTIND-1))
-
 fail () {
   echo fail
   exit 1
