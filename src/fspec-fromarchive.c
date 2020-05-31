@@ -8,8 +8,8 @@
 #include <archive_entry.h>
 
 static void
-usage(char *prog) {
-    printf("%s [-d DATADIR]\n", prog);
+usage(const char *argv0) {
+    fprintf(stderr, "usage: %s [-d datadir]\n", argv0 ? argv0 : "fspec-fromarchive");
     exit(1);
 }
 

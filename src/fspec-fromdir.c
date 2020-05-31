@@ -13,6 +13,13 @@ int root_owned = 0;
 int absolute = 0;
 char *prefix = "";
 
+static void
+usage(const char *argv0)
+{
+   fprintf(stderr, "usage: %s [-p prefix] [-a] [-r] [dir]\n", argv0 ? argv0 : "fspec-fromdir");
+   exit(1);
+}
+
 static int
 skipdot(const struct dirent *d)
 {
@@ -120,8 +127,7 @@ main(int argc, char **argv)
            root_owned = 1;
            break;
         default:
-           fprintf(stderr, "Usage: %s [-p PREFIX] [-a] [-r] [PATH]\n", argv[0]);
-           exit(EXIT_FAILURE);
+           usage(argv[0]);
         }
     }
 
