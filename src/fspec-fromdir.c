@@ -90,10 +90,8 @@ printentry(char *path, size_t len, size_t max)
 
     printf("mode=%04o\n", st.st_mode & ~S_IFMT);
     if (!root_owned) {
-        if (st.st_uid != 0)
-            printf("uid=%d\n", st.st_uid);
-        if (st.st_gid != 0)
-            printf("gid=%d\n", st.st_gid);
+        printf("uid=%d\n", st.st_uid);
+        printf("gid=%d\n", st.st_gid);
     }
     putchar('\n');
 
