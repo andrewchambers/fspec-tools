@@ -53,18 +53,24 @@ main(int argc, char **argv)
     int datafd = -1;
     struct archive *a = NULL;
     struct archive_entry *entry = NULL;
+    const char *prog;
+
+    prog = argc ? strrchr(argv[0], '/') : NULL;
+    prog = prog ? prog + 1 : argv[0];
 
     a = archive_write_new();
     entry = archive_entry_new();
     if (!a || !entry)
         errx(1, "alloc failure");
-#if defined(OUT_FORMAT_CPIO)
-    archive_write_set_format_cpio_newc(a);
-#elif defined(OUT_FORMAT_TAR)
-    archive_write_set_format_pax_restricted(a);
-#else
-#error "define OUT_FORMAT_CPIO or OUT_FORMAT_TAR"
-#endif
+
+    if (prog) {
+        if (strcmp(prog, "fspec-tar") == 0)
+            archive_write_set_format_pax_restricted(a);
+        else if (strcmp(prog, "fspec-cpio") == 0)
+            archive_write_set_format_cpio_newc(a);
+    }
+    if (!archive_format(a))
+        errx(1, "archive format could not be inferred");
 
     if (argc == 1) {
         input = stdin;

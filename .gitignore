@@ -1,4 +1,5 @@
 *.o
+/src/fspec-archive
 /src/fspec-tar
 /src/fspec-cpio
 /src/fspec-fromarchive
