@@ -98,7 +98,8 @@ printentry(char *path, size_t len, size_t max)
         break;
     }
 
-    printf("mode=%04o\n", st.st_mode & ~S_IFMT);
+    if (!S_ISLNK(st.st_mode))
+        printf("mode=%04o\n", st.st_mode & ~S_IFMT);
     if (!root_owned) {
         printf("uid=%d\n", st.st_uid);
         printf("gid=%d\n", st.st_gid);
