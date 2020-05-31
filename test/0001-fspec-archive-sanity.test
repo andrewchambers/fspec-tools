@@ -62,8 +62,8 @@ devnum=2
 
 EOF
 
-fspec-tar < t.fspec | fspec-fromtar > got.fspec
-diff -u want.fspec got.fspec
-
-fspec-cpio < t.fspec | fspec-fromcpio > got.fspec
-diff -u want.fspec got.fspec
+for fmt in tar cpio
+do
+  fspec-$fmt < t.fspec | fspec-from$fmt > got.fspec
+  diff -u want.fspec got.fspec
+done
