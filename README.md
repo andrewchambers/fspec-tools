@@ -43,7 +43,7 @@ The following attributes are available:
   added to the filesystem image. Only valid for `type=reg`. If not
   present, the entry name is used, relative to the directory
   containing the manifest.
-- **link**: Symlink target. Only valid and required for `type=sym`.
+- **target**: Symlink target. Only valid and required for `type=sym`.
 - **devnum**: Device number. Only valid and required for
   `type=chardev` or `type=blockdev`.
 
@@ -58,7 +58,7 @@ source=./README.md
 
 bar
 type=sym
-link=bar
+target=bar
 
 $ fspec-tar < fs.fspec > out.tar
 $ fspec-cpio < fs.fspec > out.cpio

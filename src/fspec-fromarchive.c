@@ -100,14 +100,14 @@ main (int argc, char **argv)
             printf("gid=%lld\n", (long long)archive_entry_gid(entry));
 
         if (archive_entry_filetype(entry) == AE_IFLNK) {
-            const char *link = archive_entry_symlink(entry);
-            if (link == NULL)
+            const char *target = archive_entry_symlink(entry);
+            if (target == NULL)
                 errx(1, "archive header link missing target");
 
             if (strchr(path, '\n'))
                 errx(1, "link target contains new line");
 
-           printf("link=%s\n", link);
+           printf("target=%s\n", target);
         }
 
         if (archive_entry_filetype(entry) == AE_IFBLK || archive_entry_filetype(entry) == AE_IFCHR)

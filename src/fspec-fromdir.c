@@ -76,7 +76,7 @@ printentry(char *path, size_t len, size_t max)
         buf[buflen] = 0;
         if (strchr(buf, '\n'))
             errx(1, "link target contains new line");
-        printf("link=%s\n", buf);
+        printf("target=%s\n", buf);
         break;
     case S_IFCHR:
     case S_IFBLK:
