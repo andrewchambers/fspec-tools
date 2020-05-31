@@ -8,7 +8,7 @@ mkdir foo
 touch foo/a.txt
 touch foo/b.sh
 chmod +x foo/b.sh
-mkfifo c
+mkfifo foo/c
 
 cat <<EOF > want.fspec
 a.txt
@@ -18,6 +18,10 @@ mode=0644
 b.sh
 type=reg
 mode=0755
+
+c
+type=fifo
+mode=0644
 
 EOF
 

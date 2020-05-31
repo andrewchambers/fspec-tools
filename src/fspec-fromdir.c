@@ -86,6 +86,9 @@ printentry(char *path, size_t len, size_t max)
     case S_IFDIR:
         puts("type=dir");
         break;
+    case S_IFIFO:
+        puts("type=fifo");
+        break;
     }
 
     printf("mode=%04o\n", st.st_mode & ~S_IFMT);
