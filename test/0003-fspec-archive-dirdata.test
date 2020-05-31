@@ -10,7 +10,7 @@ source=./foo.txt
 
 EOF
 
-fspec-tar < t.fspec | fspec-fromtar -d data > out.fspec
+fspec-tar < t.fspec | fspec-fromarchive -d data > out.fspec
 dataname="$(echo data/*)"
 
 
