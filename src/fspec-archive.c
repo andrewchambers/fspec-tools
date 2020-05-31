@@ -114,8 +114,8 @@ main(int argc, char **argv)
                 archive_entry_set_filetype(entry, filetype(t));
                 if (set_default_mode)
                     mode = defaultmode(t);
-            } else if (strncmp(line, "target=", 5) == 0) {
-                archive_entry_set_symlink(entry, line + 5);
+            } else if (strncmp(line, "target=", 7) == 0) {
+                archive_entry_set_symlink(entry, line + 7);
             } else if (strncmp(line, "source=", 7) == 0) {
                 const char *path = line + 7;
                 struct stat st;

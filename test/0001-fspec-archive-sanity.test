@@ -27,6 +27,10 @@ devnum=1
 type=blockdev
 devnum=2
 
+/sym
+type=sym
+target=abcd
+
 EOF
 
 cat <<EOF > want.fspec
@@ -59,6 +63,11 @@ devnum=1
 type=blockdev
 mode=0600
 devnum=2
+
+/sym
+type=sym
+mode=0777
+target=abcd
 
 EOF
 
