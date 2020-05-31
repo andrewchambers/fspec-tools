@@ -61,7 +61,7 @@ printentry(char *path, size_t len, size_t max)
     if (lstat(path, &st) != 0)
         err(1, "stat %s", path);
 
-    printf("/%s%s\n", prefix, path);
+    printf("%s/%s\n", prefix, path);
 
     switch (st.st_mode & S_IFMT) {
     case S_IFREG:
