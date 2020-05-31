@@ -30,5 +30,5 @@ target=some/target
 
 EOF
 
-fspec-fromdir -r ./foo > got.fspec
+fspec-fromdir -r -C foo > got.fspec
 diff -u want.fspec got.fspec
