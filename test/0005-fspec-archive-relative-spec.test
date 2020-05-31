@@ -1,0 +1,12 @@
+#! /bin/sh
+set -eu
+
+mkdir foo
+echo hello > foo/bar.txt
+cat << EOF | > ./foo/manifest.fspec
+bar.txt
+type=reg
+EOF
+
+fspec-tar ./foo/manifest.fspec > /dev/null
+fspec-cpio ./foo/manifest.fspec > /dev/null
