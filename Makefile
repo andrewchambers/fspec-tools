@@ -13,8 +13,10 @@ CFLAGS+=-Wall -Wpedantic
 BIN=\
 	src/fspec-tar\
 	src/fspec-cpio\
+	src/fspec-iso\
 	src/fspec-fromtar\
 	src/fspec-fromcpio\
+	src/fspec-fromiso\
 	src/fspec-fromdir
 
 SCRIPT=\
@@ -39,11 +41,17 @@ src/fspec-tar: src/fspec-tar.o src/libcommon.a
 src/fspec-cpio: src/fspec-cpio.o src/libcommon.a
 	$(CC) $(LDFLAGS) -o $@ src/fspec-cpio.o src/libcommon.a $(LDLIBS)
 
+src/fspec-iso: src/fspec-iso.o src/libcommon.a
+	$(CC) $(LDFLAGS) -o $@ src/fspec-iso.o src/libcommon.a $(LDLIBS)
+
 src/fspec-fromtar: src/fspec-fromtar.o src/libcommon.a
 	$(CC) $(LDFLAGS) -o $@ src/fspec-fromtar.o src/libcommon.a $(LDLIBS)
 
 src/fspec-fromcpio: src/fspec-fromcpio.o src/libcommon.a
 	$(CC) $(LDFLAGS) -o $@ src/fspec-fromcpio.o src/libcommon.a $(LDLIBS)
+
+src/fspec-fromiso: src/fspec-fromiso.o src/libcommon.a
+	$(CC) $(LDFLAGS) -o $@ src/fspec-fromiso.o src/libcommon.a $(LDLIBS)
 
 src/fspec-fromdir: src/fspec-fromdir.o
 	$(CC) $(LDFLAGS) -o $@ src/fspec-fromdir.o
