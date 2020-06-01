@@ -3,6 +3,7 @@
 PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 
+ARFLAGS=-cr
 LDLIBS=-l archive
 
 -include config.mk
@@ -10,35 +11,42 @@ LDLIBS=-l archive
 CFLAGS+=-Wall -Wpedantic
 
 BIN=\
-	src/fspec-archive\
-	src/fspec-fromarchive\
-	src/fspec-fromdir\
-	src/fspec-filldirs
-
-OBJ=\
-	src/fspec-archive.o\
-	src/fspec-fromarchive.o\
-	src/fspec-fromdir.o
-
-CLEAN=\
 	src/fspec-tar\
 	src/fspec-cpio\
-	src/fspec-archive\
-	src/fspec-fromarchive\
-	src/fspec-fromdir\
-	$(OBJ)
+	src/fspec-fromtar\
+	src/fspec-fromcpio\
+	src/fspec-fromdir
+
+SCRIPT=\
+	src/fspec-filldirs
+
+LIBOBJ=\
+	src/archive.o\
+	src/fromarchive.o
 
 .PHONY: all
-all: $(BIN) src/fspec-tar src/fspec-cpio
+all: $(BIN)
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-.o:
-	$(CC) $(LDFLAGS) -o $@ $< $(LDLIBS)
+src/libcommon.a: $(LIBOBJ)
+	$(AR) $(ARFLAGS) $@ $(LIBOBJ)
 
-src/fspec-tar src/fspec-cpio:
-	ln -sf fspec-archive $@
+src/fspec-tar: src/fspec-tar.o src/libcommon.a
+	$(CC) $(LDFLAGS) -o $@ src/fspec-tar.o src/libcommon.a $(LDLIBS)
+
+src/fspec-cpio: src/fspec-cpio.o src/libcommon.a
+	$(CC) $(LDFLAGS) -o $@ src/fspec-cpio.o src/libcommon.a $(LDLIBS)
+
+src/fspec-fromtar: src/fspec-fromtar.o src/libcommon.a
+	$(CC) $(LDFLAGS) -o $@ src/fspec-fromtar.o src/libcommon.a $(LDLIBS)
+
+src/fspec-fromcpio: src/fspec-fromcpio.o src/libcommon.a
+	$(CC) $(LDFLAGS) -o $@ src/fspec-fromcpio.o src/libcommon.a $(LDLIBS)
+
+src/fspec-fromdir: src/fspec-fromdir.o
+	$(CC) $(LDFLAGS) -o $@ src/fspec-fromdir.o
 
 .PHONY: test
 test: all
@@ -47,10 +55,8 @@ test: all
 .PHONY: install
 install: all
 	mkdir -p $(DESTDIR)$(BINDIR)
-	cp $(BIN) $(DESTDIR)$(BINDIR)
-	ln -sf fspec-archive $(DESTDIR)$(BINDIR)/fspec-tar
-	ln -sf fspec-archive $(DESTDIR)$(BINDIR)/fspec-cpio
+	cp $(BIN) $(SCRIPT) $(DESTDIR)$(BINDIR)
 
 .PHONY: clean
 clean:
-	rm -f $(CLEAN)
+	rm -f $(BIN) $(BIN:%=%.o) $(LIBOBJ) libarchive.a

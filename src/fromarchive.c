@@ -1,17 +1,11 @@
 #define _POSIX_C_SOURCE 200809L
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <archive.h>
 #include <err.h>
-#include <errno.h>
 #include <archive_entry.h>
-
-static void
-usage(const char *argv0) {
-    fprintf(stderr, "usage: %s [-d datadir]\n", argv0 ? argv0 : "fspec-fromarchive");
-    exit(1);
-}
 
 static const char *
 filetype(__LA_MODE_T ty)
@@ -28,27 +22,17 @@ filetype(__LA_MODE_T ty)
     exit(1);
 }
 
-int
-main (int argc, char **argv)
+void
+fspec_fromarchive(struct archive *a, const char *data_dir)
 {
-    int r, opt;
+    int r;
     ssize_t size;
-    struct archive *a = NULL;
     struct archive_entry *entry = NULL;
     FILE *data = NULL;
-    char *data_dir = NULL;
     char buff[4096];
 
-    while ((opt = getopt(argc, argv, "d:")) != -1) {
-        switch (opt) {
-        case 'd':
-            data_dir = optarg;
-            break;
-        default:
-            usage(argv[0]);
-            break;
-        }
-    }
+    if (archive_read_open_filename(a, NULL, 16384) != ARCHIVE_OK)
+        errx(1, "archive open failed: %s", archive_error_string(a));
 
     if (data_dir) {
         if (strchr(data_dir, '\n'))
@@ -58,15 +42,6 @@ main (int argc, char **argv)
         if (r == -1 && errno != EEXIST)
             err(1, "unable to create %s", data_dir);
     }
-
-    a = archive_read_new();
-    if (!a)
-        errx(1, "alloc fail");
-
-    archive_read_support_format_all(a);
-    r = archive_read_open_filename(a, NULL, 16384);
-    if (r != ARCHIVE_OK)
-        errx(1, "archive open failed: %s", archive_error_string(a));
 
     while (1) {
         r = archive_read_next_header(a, &entry);
@@ -143,10 +118,6 @@ main (int argc, char **argv)
         puts("");
     }
 
-    archive_read_free(a);
-
     if (fflush(stdout) != 0 || ferror(stdout))
         errx(1, "io error");
-
-    return 0;
 }
