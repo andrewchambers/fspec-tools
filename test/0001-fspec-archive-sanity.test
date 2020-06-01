@@ -71,8 +71,8 @@ target=abcd
 
 EOF
 
-for fmt in tar cpio
+for fmt in tar initcpio
 do
-  fspec-$fmt < t.fspec | fspec-fromarchive > got.fspec
+  fspec-$fmt < t.fspec | fspec-from$fmt > got.fspec
   diff -u want.fspec got.fspec
 done

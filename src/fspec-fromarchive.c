@@ -38,6 +38,11 @@ main (int argc, char **argv)
     FILE *data = NULL;
     char *data_dir = NULL;
     char buff[4096];
+    const char *prog;
+
+    prog = argc ? strrchr(argv[0], '/') : NULL;
+    prog = prog ? prog + 1 : argv[0];
+    prog = prog ? prog : "";
 
     while ((opt = getopt(argc, argv, "d:")) != -1) {
         switch (opt) {
@@ -49,6 +54,9 @@ main (int argc, char **argv)
             break;
         }
     }
+
+    argc -= optind;
+    argv += optind;
 
     if (data_dir) {
         if (strchr(data_dir, '\n'))
@@ -63,7 +71,15 @@ main (int argc, char **argv)
     if (!a)
         errx(1, "alloc fail");
 
-    archive_read_support_format_all(a);
+    if (strcmp(prog, "fspec-fromtar") == 0) {
+        archive_read_support_format_tar(a);
+        archive_read_support_format_gnutar(a);
+    } else if (strcmp(prog, "fspec-frominitcpio") == 0) {
+        archive_read_support_format_cpio(a);
+    } else {
+        errx(1, "run as one of fspec-fromtar, fspec-frominitcpio, fspec-fromiso");
+    }
+
     r = archive_read_open_filename(a, NULL, 16384);
     if (r != ARCHIVE_OK)
         errx(1, "archive open failed: %s", archive_error_string(a));

@@ -9,4 +9,4 @@ type=reg
 EOF
 
 fspec-tar ./foo/manifest.fspec > /dev/null
-fspec-cpio ./foo/manifest.fspec > /dev/null
+fspec-initcpio ./foo/manifest.fspec > /dev/null

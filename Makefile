@@ -17,16 +17,20 @@ OBJ=\
 	src/fspec-fromarchive.o\
 	src/fspec-fromdir.o
 
-CLEAN=\
+LNK=\
 	src/fspec-tar\
-	src/fspec-cpio\
+	src/fspec-initcpio\
+	src/fspec-fromtar\
+	src/fspec-frominitcpio
+
+CLEAN=\
 	src/fspec-archive\
 	src/fspec-fromarchive\
 	src/fspec-fromdir\
-	$(OBJ)
+	$(LNK) $(OBJ)
 
 .PHONY: all
-all: $(BIN) src/fspec-tar src/fspec-cpio
+all: $(BIN) $(LNK)
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -34,8 +38,11 @@ all: $(BIN) src/fspec-tar src/fspec-cpio
 .o:
 	$(CC) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
-src/fspec-tar src/fspec-cpio:
-	ln -sf fspec-archive $@
+src/fspec-tar src/fspec-initcpio: src/fspec-archive
+	ln -f src/fspec-archive $@
+
+src/fspec-fromtar src/fspec-frominitcpio: src/fspec-fromarchive
+	ln -f src/fspec-fromarchive $@
 
 .PHONY: test
 test: all
@@ -45,8 +52,12 @@ test: all
 install: all
 	mkdir -p $(DESTDIR)$(BINDIR)
 	cp $(BIN) $(DESTDIR)$(BINDIR)
-	ln -sf fspec-archive $(DESTDIR)$(BINDIR)/fspec-tar
-	ln -sf fspec-archive $(DESTDIR)$(BINDIR)/fspec-cpio
+	cd $(DESTDIR)$(BINDIR) \
+	  && ln -f fspec-archive fspec-tar \
+	  && ln -f fspec-archive fspec-initcpio \
+	  && ln -f fspec-fromarchive fspec-fromtar \
+	  && ln -f fspec-fromarchive fspec-frominitcpio \
+	  && rm fspec-archive fspec-fromarchive
 
 .PHONY: clean
 clean:

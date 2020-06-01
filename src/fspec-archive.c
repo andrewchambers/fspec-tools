@@ -14,7 +14,7 @@
 static void
 usage(const char *prog)
 {
-    fprintf(stderr, "usage: %s [-x format]\n", prog ? prog : "fspec-archive");
+    fprintf(stderr, "usage: %s [input]\n", prog);
     exit(1);
 }
 
@@ -61,40 +61,29 @@ main(int argc, char **argv)
     struct archive *a = NULL;
     struct archive_entry *entry = NULL;
     const char *prog;
-    int opt;
 
     prog = argc ? strrchr(argv[0], '/') : NULL;
     prog = prog ? prog + 1 : argv[0];
+    prog = prog ? prog : "";
+    
+    argc--;
+    argv++;
 
     a = archive_write_new();
     entry = archive_entry_new();
     if (!a || !entry)
         errx(1, "alloc failure");
 
-    while ((opt = getopt(argc, argv, "x:")) != -1) {
-        switch (opt) {
-        case 'x':
-            if (archive_write_set_format_by_name(a, optarg) != ARCHIVE_OK)
-                errx(1, "%s", archive_error_string(a));
-            break;
-        default:
-            usage(prog);
-        }
-    }
-    argc -= optind;
-    argv += optind;
-
-    if (!archive_format(a) && prog) {
-        if (strcmp(prog, "fspec-tar") == 0)
-            archive_write_set_format_pax_restricted(a);
-        else if (strcmp(prog, "fspec-cpio") == 0)
-            archive_write_set_format_cpio_newc(a);
-    }
-    if (!archive_format(a))
-        errx(1, "archive format could not be inferred, and was not specified explicitly");
+    if (strcmp(prog, "fspec-tar") == 0)
+        archive_write_set_format_pax_restricted(a);
+    else if (strcmp(prog, "fspec-initcpio") == 0)
+        archive_write_set_format_cpio_newc(a);
+    else
+        errx(1, "run as one of fspec-tar, fspec-initcpio");
 
     if (argc > 1)
         usage(prog);
+
     if (argc == 1) {
         input = fopen(argv[0], "r");
         if (!input)

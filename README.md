@@ -54,7 +54,7 @@ Extract a tarball:
 
 ```
 # no root needed for special devices
-$ gzip -d < fs.tar.gz | fspec-fromarchive -d ./data > fs.fspec
+$ gzip -d < fs.tar.gz | fspec-fromtar -d ./data > fs.fspec
 ```
 
 ## Format
