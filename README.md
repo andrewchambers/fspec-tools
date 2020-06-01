@@ -50,6 +50,12 @@ Create an initramfs:
 $ fspec-cpio < fs.fspec | gzip > out.cpio.gz
 ```
 
+Extract a tarball (no root needed):
+
+```
+$ gzip -d < fs.tar.gz | fspec-fromtar -d ./data > fs.fspec
+```
+
 ## Format
 
 ```
