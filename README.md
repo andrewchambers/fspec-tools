@@ -4,6 +4,52 @@
 
 Tools to create filesystem images from an fspec filesystem specification.
 
+
+## Examples
+
+
+Generate an fspec from the current directory:
+
+```
+$ fspec-fromdir
+
+/README.md
+type=reg
+mode=0644
+uid=1000
+gid=100
+
+...
+```
+
+Generate an fspec from another directory:
+
+```
+$ fspec-fromdir -C / dev
+
+/dev/null
+type=chardev
+devnum=259
+mode=0666
+uid=0
+gid=0
+
+...
+
+```
+
+Create a tarball:
+
+```
+$ fspec-tar < fs.fspec | gzip > out.tar.gz
+```
+
+Create an initramfs:
+
+```
+$ fspec-cpio < fs.fspec | gzip > out.cpio.gz
+```
+
 ## Format
 
 ```
@@ -46,20 +92,3 @@ The following attributes are available:
 - **target**: Symlink target. Only valid and required for `type=sym`.
 - **devnum**: Device number. Only valid and required for
   `type=chardev` or `type=blockdev`.
-
-## Examples
-```
-$ cat fs.fspec
-/foo
-type=reg
-uid=123
-gid=123
-source=./README.md
-
-/bar
-type=sym
-target=bar
-
-$ fspec-tar < fs.fspec > out.tar
-$ fspec-cpio < fs.fspec > out.cpio
-```
