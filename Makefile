@@ -3,8 +3,11 @@
 PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 
-CFLAGS+=-Wall -Wpedantic
 LDLIBS=-l archive
+
+-include config.mk
+
+CFLAGS+=-Wall -Wpedantic
 
 BIN=\
 	src/fspec-archive\
