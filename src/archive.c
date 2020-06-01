@@ -1,22 +1,14 @@
 #define _POSIX_C_SOURCE 200809L
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <libgen.h>
-#include <fcntl.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <err.h>
 #include <archive.h>
 #include <archive_entry.h>
-
-static void
-usage(const char *prog)
-{
-    fprintf(stderr, "usage: %s [-x format]\n", prog ? prog : "fspec-archive");
-    exit(1);
-}
 
 static int
 filetype(const char *type)
@@ -50,70 +42,39 @@ defaultmode(const char *type)
     errx(1, "unknown file type '%s'", type);
 }
 
-int
-main(int argc, char **argv)
+void
+fspec_archive(struct archive *a, char *input)
 {
-    FILE *input = NULL;
     char *line = NULL;
     size_t len = 0;
-    ssize_t n = 0;
+    ssize_t n;
     int datafd = -1;
-    struct archive *a = NULL;
-    struct archive_entry *entry = NULL;
-    const char *prog;
-    int opt;
+    struct archive_entry *entry;
 
-    prog = argc ? strrchr(argv[0], '/') : NULL;
-    prog = prog ? prog + 1 : argv[0];
+    if (input) {
+        char *dir;
 
-    a = archive_write_new();
-    entry = archive_entry_new();
-    if (!a || !entry)
-        errx(1, "alloc failure");
+        if (!freopen(input, "r", stdin))
+            err(1, "unable to open input %s", input);
 
-    while ((opt = getopt(argc, argv, "x:")) != -1) {
-        switch (opt) {
-        case 'x':
-            if (archive_write_set_format_by_name(a, optarg) != ARCHIVE_OK)
-                errx(1, "%s", archive_error_string(a));
-            break;
-        default:
-            usage(prog);
-        }
-    }
-    argc -= optind;
-    argv += optind;
-
-    if (!archive_format(a) && prog) {
-        if (strcmp(prog, "fspec-tar") == 0)
-            archive_write_set_format_pax_restricted(a);
-        else if (strcmp(prog, "fspec-cpio") == 0)
-            archive_write_set_format_cpio_newc(a);
-    }
-    if (!archive_format(a))
-        errx(1, "archive format could not be inferred, and was not specified explicitly");
-
-    if (argc > 1)
-        usage(prog);
-    if (argc == 1) {
-        input = fopen(argv[0], "r");
-        if (!input)
-            err(1, "unable to open input %s", argv[1]);
-        if (chdir(dirname(argv[1])) < 0)
-            err(1, "unable to chdir");
-    } else {
-        input = stdin;
+        dir = dirname(input);
+        if (chdir(dir) < 0)
+            err(1, "chdir %s", dir);
     }
 
     if (archive_write_open_filename(a, NULL) != ARCHIVE_OK)
         errx(1, "archive open failed: %s", archive_error_string(a));
+
+    entry = archive_entry_new();
+    if (!entry)
+        err(1, NULL);
 
     do {
         int set_default_mode = 1;
         int mode = 0;
 
         /* skip blank lines */
-        while ((n = getline(&line, &len, input)) == 1)
+        while ((n = getline(&line, &len, stdin)) == 1)
             ;
         if (n <= 0)
             break;
@@ -123,7 +84,7 @@ main(int argc, char **argv)
         archive_entry_set_pathname(entry, line[0] == '/' ? line + 1 : line);
         archive_entry_set_size(entry, 0);
 
-        while ((n = getline(&line, &len, input)) > 1) {
+        while ((n = getline(&line, &len, stdin)) > 1) {
             if (line[n - 1] == '\n')
                 line[n - 1] = '\0';
             if (strncmp(line, "uid=", 4) == 0) {
@@ -187,7 +148,4 @@ main(int argc, char **argv)
         errx(1, "archive close failed: %s", archive_error_string(a));
 
     archive_entry_free(entry);
-    archive_write_free(a);
-
-    return 0;
 }

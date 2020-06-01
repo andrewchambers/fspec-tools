@@ -1,6 +1,7 @@
 *.o
-/src/fspec-archive
+/src/libcommon.a
 /src/fspec-tar
 /src/fspec-cpio
-/src/fspec-fromarchive
+/src/fspec-fromtar
+/src/fspec-fromcpio
 /src/fspec-fromdir
