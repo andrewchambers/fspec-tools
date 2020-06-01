@@ -20,8 +20,11 @@ OBJ=\
 LNK=\
 	src/fspec-tar\
 	src/fspec-initcpio\
+	src/fspec-iso\
+	src/fspec-isolinux\
 	src/fspec-fromtar\
-	src/fspec-frominitcpio
+	src/fspec-frominitcpio\
+	src/fspec-fromiso
 
 CLEAN=\
 	src/fspec-archive\
@@ -38,10 +41,11 @@ all: $(BIN) $(LNK)
 .o:
 	$(CC) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
-src/fspec-tar src/fspec-initcpio: src/fspec-archive
+src/fspec-tar src/fspec-initcpio\
+  src/fspec-iso src/fspec-isolinux: src/fspec-archive
 	ln -f src/fspec-archive $@
 
-src/fspec-fromtar src/fspec-frominitcpio: src/fspec-fromarchive
+src/fspec-fromtar src/fspec-frominitcpio src/fspec-fromiso: src/fspec-fromarchive
 	ln -f src/fspec-fromarchive $@
 
 .PHONY: test
@@ -55,8 +59,11 @@ install: all
 	cd $(DESTDIR)$(BINDIR) \
 	  && ln -f fspec-archive fspec-tar \
 	  && ln -f fspec-archive fspec-initcpio \
+	  && ln -f fspec-archive fspec-iso \
+	  && ln -f fspec-archive fspec-isolinux \
 	  && ln -f fspec-fromarchive fspec-fromtar \
 	  && ln -f fspec-fromarchive fspec-frominitcpio \
+	  && ln -f fspec-fromarchive fspec-fromiso \
 	  && rm fspec-archive fspec-fromarchive
 
 .PHONY: clean

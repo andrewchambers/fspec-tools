@@ -65,7 +65,7 @@ main(int argc, char **argv)
     prog = argc ? strrchr(argv[0], '/') : NULL;
     prog = prog ? prog + 1 : argv[0];
     prog = prog ? prog : "";
-    
+
     argc--;
     argv++;
 
@@ -74,12 +74,22 @@ main(int argc, char **argv)
     if (!a || !entry)
         errx(1, "alloc failure");
 
-    if (strcmp(prog, "fspec-tar") == 0)
+    if (strcmp(prog, "fspec-tar") == 0) {
         archive_write_set_format_pax_restricted(a);
-    else if (strcmp(prog, "fspec-initcpio") == 0)
+    } else if (strcmp(prog, "fspec-initcpio") == 0) {
         archive_write_set_format_cpio_newc(a);
-    else
-        errx(1, "run as one of fspec-tar, fspec-initcpio");
+    } else if (strcmp(prog, "fspec-iso") == 0) {
+        archive_write_set_format_iso9660(a);
+    } else if (strcmp(prog, "fspec-isolinux") == 0) {
+        archive_write_set_format_iso9660(a);
+        if ( archive_write_set_option(a, "iso9660", "boot", "isolinux/isolinux.bin") != ARCHIVE_OK
+          || archive_write_set_option(a, "iso9660", "boot-catalog", "isolinux/boot.cat") != ARCHIVE_OK
+          || archive_write_set_option(a, "iso9660", "boot-load-size", "4")  != ARCHIVE_OK
+          || archive_write_set_option(a, "iso9660", "boot-info-table", "true")  != ARCHIVE_OK)
+            errx(1, "failed to set iso9660 options: %s", archive_error_string(a));
+    } else {
+        errx(1, "run as one of fspec-tar, fspec-initcpio, fspec-iso, fspec-isolinux");
+    }
 
     if (argc > 1)
         usage(prog);
@@ -87,8 +97,10 @@ main(int argc, char **argv)
     if (argc == 1) {
         input = fopen(argv[0], "r");
         if (!input)
-            err(1, "unable to open input %s", argv[1]);
-        if (chdir(dirname(argv[1])) < 0)
+            err(1, "unable to open input %s", argv[0]);
+
+        // chdir to manifest.
+        if (chdir(dirname(argv[0])) < 0)
             err(1, "unable to chdir");
     } else {
         input = stdin;

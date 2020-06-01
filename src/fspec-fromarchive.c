@@ -76,11 +76,13 @@ main (int argc, char **argv)
         archive_read_support_format_gnutar(a);
     } else if (strcmp(prog, "fspec-frominitcpio") == 0) {
         archive_read_support_format_cpio(a);
+    } else if (strcmp(prog, "fspec-fromiso") == 0) {
+        archive_read_support_format_iso9660(a);
     } else {
         errx(1, "run as one of fspec-fromtar, fspec-frominitcpio, fspec-fromiso");
     }
 
-    r = archive_read_open_filename(a, NULL, 16384);
+    r = archive_read_open_filename(a, argc == 1 ? argv[0] : NULL, 16384);
     if (r != ARCHIVE_OK)
         errx(1, "archive open failed: %s", archive_error_string(a));
 
