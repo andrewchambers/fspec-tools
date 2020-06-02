@@ -1,10 +1,10 @@
 #define _POSIX_C_SOURCE 200809L
-#include <stdlib.h>
-#include <libgen.h>
-#include <err.h>
-#include <string.h>
 #include <archive.h>
 #include <archive_entry.h>
+#include <err.h>
+#include <libgen.h>
+#include <stdlib.h>
+#include <string.h>
 #include "common.h"
 
 static void
@@ -32,16 +32,11 @@ main(int argc, char **argv)
         switch (opt) {
         case 'O':{
             char *eq = strchr(optarg, '=');
-            char *v = eq + 1;
-            char *o = optarg;
-
             if (!eq)
                 errx(1, "malformed -O option - '%s'", optarg);
-
             *eq = 0;
-            if (archive_write_set_option(a, "iso9660", o, v) != ARCHIVE_OK)
+            if (archive_write_set_option(a, "iso9660", optarg, eq+1) != ARCHIVE_OK)
                 errx(1, "setting option failed: %s", archive_error_string(a));
-            *eq = '=';
             break;
         }
         default:
