@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <libgen.h>
 #include <err.h>
+#include <string.h>
 #include <archive.h>
 #include <archive_entry.h>
 #include "common.h"
@@ -20,9 +21,29 @@ main(int argc, char **argv)
     struct archive *a;
     int opt;
 
+    a = archive_write_new();
+    if (!a)
+        errx(1, "alloc failure");
+    archive_write_set_format_iso9660(a);
+
     prog = argc ? basename(argv[0]) : "fspec-iso";
-    while ((opt = getopt(argc, argv, "")) != -1) {
+
+    while ((opt = getopt(argc, argv, "O:")) != -1) {
         switch (opt) {
+        case 'O':{
+            char *eq = strchr(optarg, '=');
+            char *v = eq + 1;
+            char *o = optarg;
+
+            if (!eq)
+                errx(1, "malformed -O option - '%s'", optarg);
+
+            *eq = 0;
+            if (archive_write_set_option(a, "iso9660", o, v) != ARCHIVE_OK)
+                errx(1, "setting option failed: %s", archive_error_string(a));
+            *eq = '=';
+            break;
+        }
         default:
             usage(prog);
         }
@@ -33,10 +54,6 @@ main(int argc, char **argv)
     if (argc > 1)
         usage(prog);
 
-    a = archive_write_new();
-    if (!a)
-        errx(1, "alloc failure");
-    archive_write_set_format_iso9660(a);
     fspec_archive(a, argv[0]);
     archive_write_free(a);
 
