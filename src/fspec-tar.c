@@ -20,7 +20,7 @@ main(int argc, char **argv)
     struct archive *a;
     int opt;
 
-    prog = argc ? basename(argv[0]) : "fspec-cpio";
+    prog = argc ? basename(argv[0]) : "fspec-tar";
     while ((opt = getopt(argc, argv, "")) != -1) {
         switch (opt) {
         default:
