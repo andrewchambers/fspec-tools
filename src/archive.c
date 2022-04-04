@@ -150,4 +150,5 @@ fspec_archive(struct archive *a, char *input)
         fatal("archive close failed: %s", archive_error_string(a));
 
     archive_entry_free(entry);
+    free(line);
 }
