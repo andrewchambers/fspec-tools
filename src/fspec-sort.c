@@ -3,18 +3,18 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 #include <unistd.h>
 #include <stdnoreturn.h>
 #include "common.h"
 
-static char *argv0;
 static char **fs;
 static size_t fslen;
 
 static void
-usage(void)
+usage(char *prog)
 {
-	fprintf(stderr, "usage: %s [-p] [fspec...]\n", argv0);
+	fprintf(stderr, "usage: %s [-p] [fspec...]\n", prog);
 	exit(1);
 }
 
@@ -123,16 +123,18 @@ main(int argc, char *argv[])
 {
 	int opt = 0;
 	int pflag = 0;
+	char *prog;
 	FILE *file;
 
-	argv0 = argc ? argv[0] : "fspec-sort";
+	prog = argc ? basename(argv[0]) : "fspec-sort";
+
 	while ((opt = getopt(argc, argv, "p")) != -1) {
 		switch (opt) {
 		case 'p':
 			pflag = 1;
 			break;
 		default:
-			usage();
+			usage(prog);
 		}
 	}
 	
