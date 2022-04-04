@@ -5,18 +5,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <libgen.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <archive.h>
 #include <stdnoreturn.h>
 #include "common.h"
 
-int absolute = 0;
+static char *rootdir;
+static int uid = 0;
+static int gid = 0;
 
 static void
 usage(const char *argv0)
 {
-	fprintf(stderr, "usage: %s [-C dir] [-a] [path...]\n", argv0 ? argv0 : "fspec-fromdir");
+	fprintf(stderr, "usage: %s path\n", argv0 ? argv0 : "fspec-fromdir");
 	exit(1);
 }
 
@@ -32,20 +34,23 @@ static void
 recurse(char *path, size_t len, size_t max)
 {
 	struct dirent **d;
-	int dlen;
+	ssize_t i, namelen, dlen;
 
 	dlen = scandir(path, &d, skipdot, alphasort);
 	if (dlen < 0)
 		fatal("scandir %s:", path);
 	if (len == max)
 		fatal("path is too long");
-	if (len)
-		path[len++] = '/';
-	for (int i = 0; i < dlen; ++i) {
-		char *end = memccpy(path + len, d[i]->d_name, '\0', max - len);
-		if (!end)
+	path[len-1] = '/';
+	len += 1;
+	for (i = 0; i < dlen; i++) {
+		if (strchr(d[i]->d_name, '\n'))
+			fatal("path contains newline");
+		namelen = strlen(d[i]->d_name);
+		if (len+namelen >= max)
 			fatal("path is too long");
-		printentry(path, end - path - 1, max);
+		memcpy(path+len-1, d[i]->d_name, namelen + 1);
+		printentry(path, len+namelen, max);
 		free(d[i]);
 	}
 	free(d);
@@ -58,24 +63,15 @@ printentry(char *path, size_t len, size_t max)
 	ssize_t buflen;
 	struct stat st;
 
-	if (strchr(path, '\n'))
-		fatal("directory path contains new line");
-
 	if (lstat(path, &st) != 0)
 		fatal("stat %s:", path);
 
-	printf("%s%s\n", path[0] == '/' ? "" : "/", path);
+	printf("%s%s\n", path[1] ? "" : "/", path+1);
 
 	switch (st.st_mode & S_IFMT) {
 	case S_IFREG:
 		puts("type=reg");
-		if (absolute) {
-			if (realpath(path, buf) == NULL)
-				fatal("realpath of %s failed:", path);
-			if (strchr(buf, '\n'))
-				fatal("file path contains new line, aborting");
-			printf("source=%s\n", buf);
-		}
+		printf("source=%s%s\n", rootdir, path+1);
 		break;
 	case S_IFLNK:
 		puts("type=sym");
@@ -104,8 +100,10 @@ printentry(char *path, size_t len, size_t max)
 
 	if (!S_ISLNK(st.st_mode))
 		printf("mode=%04o\n", st.st_mode & ~S_IFMT);
-	printf("uid=%d\n", st.st_uid);
-	printf("gid=%d\n", st.st_gid);
+	if (uid)
+		printf("uid=%d\n", st.st_uid);
+	if (gid)
+		printf("gid=%d\n", st.st_gid);
 	putchar('\n');
 
 	if (S_ISDIR(st.st_mode))
@@ -117,36 +115,39 @@ main(int argc, char **argv)
 {
 	int opt;
 	char *prog;
-	char path[PATH_MAX];
+	static char path[PATH_MAX];
 
 	prog = argc ? basename(argv[0]) : "fspec-dir";
-	while ((opt = getopt(argc, argv, "C:ar")) != -1) {
+	while ((opt = getopt(argc, argv, "ug")) != -1) {
 		switch (opt) {
-		case 'C':
-			if (chdir(optarg) != 0)
-				fatal("chdir %s:", optarg);
+		case 'u':
+			uid = 1;
 			break;
-		case 'a':
-			absolute = 1;
+		case 'g':
+			gid = 1;
 			break;
 		default:
 			usage(prog);
 		}
 	}
 
-	if (optind < argc) {
-		for (; optind < argc; ++optind) {
-			char *end = memccpy(path, argv[optind], '\0', sizeof(path));
-			if (!end)
-				fatal("path is too long");
-			if (path[0] == '/')
-				fatal("paths must be relative");
-			printentry(path, end - path - 1, sizeof(path));
-		}
-	} else {
-		strcpy(path, ".");
-		recurse(path, 0, sizeof(path));
-	}
+	argc -= optind;
+	argv += optind;
+
+	if (argc != 1)
+		usage(prog);
+
+	rootdir = argv[0];
+
+	if (strchr(rootdir, '\n'))
+		fatal("path contains newline");
+
+	if (chdir(rootdir) != 0)
+		fatal("chdir %s:", argv[0]);
+
+	path[0] = '.';
+	path[1] = 0;
+	printentry(path, 2, sizeof(path));
 
 	if (fflush(stdout) != 0 || ferror(stdout))
 		fatal("io error");

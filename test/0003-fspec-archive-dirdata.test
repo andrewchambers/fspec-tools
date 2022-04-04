@@ -3,25 +3,19 @@
 set -eux
 
 echo hello > foo.txt
+echo goodbye > bar
 cat <<EOF > t.fspec
 /foo
 type=reg
 source=./foo.txt
 
-EOF
-
-fspec-tar < t.fspec | fspec-fromtar -d data > out.fspec
-dataname="$(echo data/*)"
-
-
-cat <<EOF > expected.fspec
-/foo
+/bar
 type=reg
-mode=0644
-source=$dataname
 
 EOF
 
+mkdir result
+strace fspec-tar < t.fspec | tar -C result -xvf -
 
-test "hello" = "$(cat $dataname)"
-diff -u out.fspec expected.fspec
+diff -u foo.txt result/foo
+diff -u bar result/bar

@@ -11,31 +11,13 @@ Tools to create filesystem images from an fspec filesystem specification.
 Generate an fspec from the current directory:
 
 ```
-$ fspec-fromdir
+$ fspec-fromdir dir
 
 /README.md
 type=reg
 mode=0644
-uid=1000
-gid=100
 
 ...
-```
-
-Generate an fspec from another directory:
-
-```
-$ fspec-fromdir -C / dev
-
-/dev/null
-type=chardev
-devnum=259
-mode=0666
-uid=0
-gid=0
-
-...
-
 ```
 
 Create a tarball:
@@ -50,12 +32,18 @@ Create an initramfs:
 $ fspec-cpio < fs.fspec | gzip > out.cpio.gz
 ```
 
-Extract a tarball:
+Create an iso:
 
 ```
-# no root needed for special devices
-$ gzip -d < fs.tar.gz | fspec-fromarchive -d ./data > fs.fspec
+$ fspec-iso < fs.fspec > out.iso
 ```
+
+Sort an fspec by path:
+
+```
+$ fspec-sort < fs.fspec > sorted.fspec
+```
+
 
 ## Format
 

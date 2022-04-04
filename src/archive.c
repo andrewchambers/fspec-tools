@@ -108,11 +108,6 @@ fspec_archive(struct archive *a, char *input)
 				archive_entry_set_symlink(entry, line + 7);
 			} else if (strncmp(line, "source=", 7) == 0) {
 				const char *path = line + 7;
-				struct stat st;
-
-				if (stat(path, &st) != 0)
-					fatal("stat %s failed:", path);
-				archive_entry_set_size(entry, st.st_size);
 				datafd = open(path, O_RDONLY);
 				if (datafd == -1)
 					fatal("open %s failed:", path);
@@ -122,18 +117,31 @@ fspec_archive(struct archive *a, char *input)
 		}
 		archive_entry_set_perm(entry, mode);
 
+		if (archive_entry_filetype(entry) == AE_IFREG && datafd == -1) {
+			datafd = open(archive_entry_pathname(entry), O_RDONLY);
+			if (datafd == -1)
+				fatal("open %s failed:", archive_entry_pathname(entry));
+		}
+
+		if (datafd != -1) {
+			struct stat st;
+			if (fstat(datafd, &st) != 0)
+				fatal("fstat failed:");
+			archive_entry_set_size(entry, st.st_size);
+		}
+
 		if (archive_write_header(a, entry) != ARCHIVE_OK)
 			fatal("archive write header failed: %s", archive_error_string(a));
 
 		if (datafd != -1) {
-			char buff[4096];
+			char buf[4096];
 			for (;;) {
-				ssize_t wlen = read(datafd, buff, sizeof(buff));
+				ssize_t wlen = read(datafd, buf, sizeof(buf));
 				if (wlen < 0)
 					fatal("read failed:");
 				if (wlen == 0)
 					break;
-				if (archive_write_data(a, buff, wlen) != wlen)
+				if (archive_write_data(a, buf, wlen) != wlen)
 					fatal("archive write failed");
 			}
 			close(datafd);

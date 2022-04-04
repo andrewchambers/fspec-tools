@@ -14,16 +14,12 @@ BIN=\
 	src/fspec-tar\
 	src/fspec-cpio\
 	src/fspec-iso\
-	src/fspec-fromtar\
-	src/fspec-fromcpio\
-	src/fspec-fromiso\
-	src/fspec-fromdir \
-	src/fspec-sort
+	src/fspec-sort\
+	src/fspec-fromdir
 
 LIBOBJ=\
 	src/util.o\
-	src/archive.o\
-	src/fromarchive.o
+	src/archive.o
 
 .PHONY: all
 all: $(BIN)
@@ -42,15 +38,6 @@ src/fspec-cpio: src/fspec-cpio.o src/libcommon.a
 
 src/fspec-iso: src/fspec-iso.o src/libcommon.a
 	$(CC) $(LDFLAGS) -o $@ src/fspec-iso.o src/libcommon.a $(LDLIBS)
-
-src/fspec-fromtar: src/fspec-fromtar.o src/libcommon.a
-	$(CC) $(LDFLAGS) -o $@ src/fspec-fromtar.o src/libcommon.a $(LDLIBS)
-
-src/fspec-fromcpio: src/fspec-fromcpio.o src/libcommon.a
-	$(CC) $(LDFLAGS) -o $@ src/fspec-fromcpio.o src/libcommon.a $(LDLIBS)
-
-src/fspec-fromiso: src/fspec-fromiso.o src/libcommon.a
-	$(CC) $(LDFLAGS) -o $@ src/fspec-fromiso.o src/libcommon.a $(LDLIBS)
 
 src/fspec-fromdir: src/fspec-fromdir.o
 	$(CC) $(LDFLAGS) -o $@ src/fspec-fromdir.o src/libcommon.a $(LDLIBS)

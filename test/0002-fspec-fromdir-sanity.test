@@ -12,12 +12,18 @@ mkfifo foo/c
 ln -s some/target foo/d
 
 cat <<EOF > want.fspec
+/
+type=dir
+mode=0755
+
 /a.txt
 type=reg
+source=./foo/a.txt
 mode=0644
 
 /b.sh
 type=reg
+source=./foo/b.sh
 mode=0755
 
 /c
@@ -30,5 +36,5 @@ target=some/target
 
 EOF
 
-fspec-fromdir -C foo | grep -v -e "^gid=" -e "^uid=" > got.fspec
+fspec-fromdir ./foo > got.fspec
 diff -u want.fspec got.fspec
