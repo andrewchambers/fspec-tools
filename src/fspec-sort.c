@@ -43,7 +43,7 @@ cmp(const void *p1, const void *p2)
 {
 	const char *r1 = *(const char **)p1, *r2 = *(const char **)p2;
 
-	for (; *r1 == *r2 && *r1 != '\n' && *r2 != '\n'; ++r1, ++r2)
+	for (; *r1 == *r2 && *r1 != '\n'; ++r1, ++r2)
 		;
 	if (*r1 == *r2)
 		return 0;
