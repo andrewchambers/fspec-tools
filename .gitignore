@@ -2,6 +2,10 @@
 /src/libcommon.a
 /src/fspec-tar
 /src/fspec-cpio
+/src/fspec-sort
+/src/fspec-dir
+/src/fspec-iso
 /src/fspec-fromtar
 /src/fspec-fromcpio
 /src/fspec-fromdir
+/src/fspec-fromiso
