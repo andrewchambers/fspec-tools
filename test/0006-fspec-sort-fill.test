@@ -1,0 +1,55 @@
+#! /bin/sh
+
+set -eu
+
+fspec-sort -p <<EOF > 1.fspec
+/b
+type=dir
+mode=0755
+
+/
+type=dir
+mode=0755
+
+/a
+type=dir
+mode=0755
+
+/b/c/d
+type=dir
+mode=0755
+
+/b/c/a
+type=dir
+mode=0755
+
+EOF
+
+cat <<EOF > e1.fspec
+/
+type=dir
+mode=0755
+
+/a
+type=dir
+mode=0755
+
+/b
+type=dir
+mode=0755
+
+/b/c
+type=dir
+mode=0755
+
+/b/c/a
+type=dir
+mode=0755
+
+/b/c/d
+type=dir
+mode=0755
+
+EOF
+
+diff -u 1.fspec e1.fspec

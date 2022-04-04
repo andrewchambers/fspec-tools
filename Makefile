@@ -17,12 +17,11 @@ BIN=\
 	src/fspec-fromtar\
 	src/fspec-fromcpio\
 	src/fspec-fromiso\
-	src/fspec-fromdir
-
-SCRIPT=\
-	src/fspec-filldirs
+	src/fspec-fromdir \
+	src/fspec-sort
 
 LIBOBJ=\
+	src/util.o\
 	src/archive.o\
 	src/fromarchive.o
 
@@ -54,17 +53,20 @@ src/fspec-fromiso: src/fspec-fromiso.o src/libcommon.a
 	$(CC) $(LDFLAGS) -o $@ src/fspec-fromiso.o src/libcommon.a $(LDLIBS)
 
 src/fspec-fromdir: src/fspec-fromdir.o
-	$(CC) $(LDFLAGS) -o $@ src/fspec-fromdir.o
+	$(CC) $(LDFLAGS) -o $@ src/fspec-fromdir.o src/libcommon.a $(LDLIBS)
 
-.PHONY: test
-test: all
+src/fspec-sort: src/fspec-sort.o
+	$(CC) $(LDFLAGS) -o $@ src/fspec-sort.o src/libcommon.a $(LDLIBS)
+
+.PHONY: check
+check: all
 	./test/run-all
 
 .PHONY: install
 install: all
 	mkdir -p $(DESTDIR)$(BINDIR)
-	cp $(BIN) $(SCRIPT) $(DESTDIR)$(BINDIR)
+	cp $(BIN) $(DESTDIR)$(BINDIR)
 
 .PHONY: clean
 clean:
-	rm -f $(BIN) $(BIN:%=%.o) $(LIBOBJ) libarchive.a
+	rm -f $(BIN) $(BIN:%=%.o) $(LIBOBJ) libcommon.a
