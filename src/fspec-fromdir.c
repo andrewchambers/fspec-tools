@@ -116,8 +116,10 @@ int
 main(int argc, char **argv)
 {
 	int opt;
+	char *prog;
 	char path[PATH_MAX];
 
+	prog = argc ? basename(argv[0]) : "fspec-dir";
 	while ((opt = getopt(argc, argv, "C:ar")) != -1) {
 		switch (opt) {
 		case 'C':
@@ -128,7 +130,7 @@ main(int argc, char **argv)
 			absolute = 1;
 			break;
 		default:
-			usage(argv[0]);
+			usage(prog);
 		}
 	}
 
