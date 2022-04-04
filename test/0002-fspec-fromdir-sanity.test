@@ -30,5 +30,5 @@ target=some/target
 
 EOF
 
-fspec-fromdir -r -C foo > got.fspec
+fspec-fromdir -C foo | grep -v -e "^gid=" -e "^uid=" > got.fspec
 diff -u want.fspec got.fspec

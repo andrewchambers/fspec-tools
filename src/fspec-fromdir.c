@@ -11,14 +11,12 @@
 #include <stdnoreturn.h>
 #include "common.h"
 
-int root_owned = 0;
 int absolute = 0;
-char *prefix = "";
 
 static void
 usage(const char *argv0)
 {
-	fprintf(stderr, "usage: %s [-C dir] [-p prefix] [-a] [-r] [path...]\n", argv0 ? argv0 : "fspec-fromdir");
+	fprintf(stderr, "usage: %s [-C dir] [-a] [path...]\n", argv0 ? argv0 : "fspec-fromdir");
 	exit(1);
 }
 
@@ -60,10 +58,13 @@ printentry(char *path, size_t len, size_t max)
 	ssize_t buflen;
 	struct stat st;
 
+	if (strchr(path, '\n'))
+		fatal("directory path contains new line");
+
 	if (lstat(path, &st) != 0)
 		fatal("stat %s:", path);
 
-	printf("%s/%s\n", prefix, path);
+	printf("%s%s\n", path[0] == '/' ? "" : "/", path);
 
 	switch (st.st_mode & S_IFMT) {
 	case S_IFREG:
@@ -103,10 +104,8 @@ printentry(char *path, size_t len, size_t max)
 
 	if (!S_ISLNK(st.st_mode))
 		printf("mode=%04o\n", st.st_mode & ~S_IFMT);
-	if (!root_owned) {
-		printf("uid=%d\n", st.st_uid);
-		printf("gid=%d\n", st.st_gid);
-	}
+	printf("uid=%d\n", st.st_uid);
+	printf("gid=%d\n", st.st_gid);
 	putchar('\n');
 
 	if (S_ISDIR(st.st_mode))
@@ -119,20 +118,14 @@ main(int argc, char **argv)
 	int opt;
 	char path[PATH_MAX];
 
-	while ((opt = getopt(argc, argv, "C:p:ar")) != -1) {
+	while ((opt = getopt(argc, argv, "C:ar")) != -1) {
 		switch (opt) {
 		case 'C':
 			if (chdir(optarg) != 0)
 				fatal("chdir %s:", optarg);
 			break;
-		case 'p':
-			prefix = optarg;
-			break;
 		case 'a':
 			absolute = 1;
-			break;
-		case 'r':
-			root_owned = 1;
 			break;
 		default:
 			usage(argv[0]);
