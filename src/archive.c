@@ -6,9 +6,11 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <err.h>
 #include <archive.h>
 #include <archive_entry.h>
+#include <stdnoreturn.h>
+#include "common.h"
+
 
 static int
 filetype(const char *type)
@@ -25,7 +27,7 @@ filetype(const char *type)
         return AE_IFBLK;
     if (strcmp(type, "chardev") == 0)
         return AE_IFCHR;
-    errx(1, "unknown file type '%s'", type);
+    fatal("unknown file type '%s'", type);
 }
 
 static int
@@ -39,7 +41,7 @@ defaultmode(const char *type)
         return 0644;
     if (strcmp(type, "blockdev") == 0 || strcmp(type, "chardev") == 0)
         return 0600;
-    errx(1, "unknown file type '%s'", type);
+    fatal("unknown file type '%s'", type);
 }
 
 void
@@ -55,19 +57,19 @@ fspec_archive(struct archive *a, char *input)
         char *dir;
 
         if (!freopen(input, "r", stdin))
-            err(1, "unable to open input %s", input);
+            fatal("unable to open input %s:", input);
 
         dir = dirname(input);
         if (chdir(dir) < 0)
-            err(1, "chdir %s", dir);
+            fatal("chdir %s:", dir);
     }
 
     if (archive_write_open_filename(a, NULL) != ARCHIVE_OK)
-        errx(1, "archive open failed: %s", archive_error_string(a));
+        fatal("archive open failed: %s", archive_error_string(a));
 
     entry = archive_entry_new();
     if (!entry)
-        err(1, NULL);
+        fatal("alloc failure");
 
     do {
         int set_default_mode = 1;
@@ -109,30 +111,30 @@ fspec_archive(struct archive *a, char *input)
                 struct stat st;
 
                 if (stat(path, &st) != 0)
-                    err(1, "stat %s failed", path);
+                    fatal("stat %s failed:", path);
                 archive_entry_set_size(entry, st.st_size);
                 datafd = open(path, O_RDONLY);
                 if (datafd == -1)
-                    err(1, "open %s failed", path);
+                    fatal("open %s failed:", path);
             } else {
-                errx(1, "unknown attribute line '%s'", line);
+                fatal("unknown attribute line '%s'", line);
             }
         }
         archive_entry_set_perm(entry, mode);
 
         if (archive_write_header(a, entry) != ARCHIVE_OK)
-            errx(1, "archive write header failed: %s", archive_error_string(a));
+            fatal("archive write header failed: %s", archive_error_string(a));
 
         if (datafd != -1) {
             char buff[4096];
             for (;;) {
                 ssize_t wlen = read(datafd, buff, sizeof(buff));
                 if (wlen < 0)
-                    err(1, "read failed");
+                    fatal("read failed:");
                 if (wlen == 0)
                     break;
                 if (archive_write_data(a, buff, wlen) != wlen)
-                    errx(1, "archive write failed");
+                    fatal("archive write failed");
             }
             close(datafd);
             datafd = -1;
@@ -142,10 +144,10 @@ fspec_archive(struct archive *a, char *input)
     } while (n != -1);
 
     if (ferror(stdin))
-        err(1, "io error");
+        fatal("io error:");
     
     if (archive_write_close(a) != ARCHIVE_OK)
-        errx(1, "archive close failed: %s", archive_error_string(a));
+        fatal("archive close failed: %s", archive_error_string(a));
 
     archive_entry_free(entry);
 }

@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <libgen.h>
 #include <unistd.h>
-#include <err.h>
 #include <archive.h>
 #include <archive_entry.h>
+#include <stdnoreturn.h>
 #include "common.h"
 
 static void
@@ -36,7 +36,7 @@ main (int argc, char **argv)
 
     a = archive_read_new();
     if (!a)
-        errx(1, "alloc fail");
+        fatal("alloc failure");
     archive_read_support_format_iso9660(a);
     fspec_fromarchive(a, data_dir);
     archive_read_free(a);

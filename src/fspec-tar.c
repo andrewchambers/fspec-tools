@@ -1,9 +1,9 @@
 #define _POSIX_C_SOURCE 200809L
 #include <stdlib.h>
 #include <libgen.h>
-#include <err.h>
 #include <archive.h>
 #include <archive_entry.h>
+#include <stdnoreturn.h>
 #include "common.h"
 
 static void
@@ -35,7 +35,7 @@ main(int argc, char **argv)
 
     a = archive_write_new();
     if (!a)
-        errx(1, "alloc failure");
+        fatal("alloc failure");
     archive_write_set_format_pax_restricted(a);
     fspec_archive(a, argv[0]);
     archive_write_free(a);

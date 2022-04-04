@@ -1,10 +1,10 @@
 #define _POSIX_C_SOURCE 200809L
 #include <archive.h>
 #include <archive_entry.h>
-#include <err.h>
 #include <libgen.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdnoreturn.h>
 #include "common.h"
 
 static void
@@ -23,7 +23,7 @@ main(int argc, char **argv)
 
     a = archive_write_new();
     if (!a)
-        errx(1, "alloc failure");
+        fatal("alloc failure");
     archive_write_set_format_iso9660(a);
 
     prog = argc ? basename(argv[0]) : "fspec-iso";
@@ -33,10 +33,10 @@ main(int argc, char **argv)
         case 'O':{
             char *eq = strchr(optarg, '=');
             if (!eq)
-                errx(1, "malformed -O option - '%s'", optarg);
+                fatal("malformed -O option - '%s'", optarg);
             *eq = 0;
             if (archive_write_set_option(a, "iso9660", optarg, eq+1) != ARCHIVE_OK)
-                errx(1, "setting option failed: %s", archive_error_string(a));
+                fatal("setting option failed: %s", archive_error_string(a));
             break;
         }
         default:

@@ -4,8 +4,11 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <archive.h>
+#include <stdnoreturn.h>
+#include "common.h"
 
-void
+noreturn void
 fatal(const char *fmt, ...)
 {
 	va_list ap;

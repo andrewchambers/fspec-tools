@@ -4,8 +4,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <archive.h>
-#include <err.h>
 #include <archive_entry.h>
+#include <stdnoreturn.h>
+#include "common.h"
 
 static const char *
 filetype(__LA_MODE_T ty)
@@ -32,15 +33,15 @@ fspec_fromarchive(struct archive *a, const char *data_dir)
     char buff[4096];
 
     if (archive_read_open_filename(a, NULL, 16384) != ARCHIVE_OK)
-        errx(1, "archive open failed: %s", archive_error_string(a));
+        fatal("archive open failed: %s", archive_error_string(a));
 
     if (data_dir) {
         if (strchr(data_dir, '\n'))
-            errx(1, "data dir contains new line");
+            fatal("data dir contains new line");
 
         r = mkdir(data_dir, 0755);
         if (r == -1 && errno != EEXIST)
-            err(1, "unable to create %s", data_dir);
+            fatal("unable to create %s:", data_dir);
     }
 
     while (1) {
@@ -48,13 +49,13 @@ fspec_fromarchive(struct archive *a, const char *data_dir)
         if (r == ARCHIVE_EOF)
             break;
         if (r != ARCHIVE_OK)
-            errx(1, "archive next header failed: %s", archive_error_string(a));
+            fatal("archive next header failed: %s", archive_error_string(a));
 
         const char *path = archive_entry_pathname(entry);
         if (path == NULL)
-            errx(1, "archive header missing path");
+            fatal("archive header missing path");
         if (strchr(path, '\n'))
-            errx(1, "archive entry path contains new line");
+            fatal("archive entry path contains new line");
 
         printf("%s%s\n", path[0] == '/' ? "" : "/", path);
         printf("type=%s\n", filetype(archive_entry_filetype(entry)));
@@ -69,10 +70,10 @@ fspec_fromarchive(struct archive *a, const char *data_dir)
         if (archive_entry_filetype(entry) == AE_IFLNK) {
             const char *target = archive_entry_symlink(entry);
             if (target == NULL)
-                errx(1, "archive header link missing target");
+                fatal("archive header link missing target");
 
             if (strchr(path, '\n'))
-                errx(1, "link target contains new line");
+                fatal("link target contains new line");
 
            printf("target=%s\n", target);
         }
@@ -84,34 +85,34 @@ fspec_fromarchive(struct archive *a, const char *data_dir)
             char tmppath[2048];
             int n = snprintf(tmppath, sizeof(tmppath), "%s/XXXXXX", data_dir);
             if (n < 0 || n == (sizeof(tmppath)))
-                errx(1, "data dir path too long");
+                fatal("data dir path too long");
 
             int tmpfd = mkstemp(tmppath);
             if (tmpfd == -1)
-                err(1, "unable to create temp file");
+                fatal("unable to create temp file:");
 
             printf("source=%s\n", tmppath);
 
             data = fdopen(tmpfd, "w+");
             if (!data)
-                err(1, "unable to open temporary file");
+                fatal("unable to open temporary file:");
         }
 
         while (1) {
             size = archive_read_data(a, buff, sizeof(buff));
             if (size < 0)
-                errx(1, "archive read failed: %s", archive_error_string(a));
+                fatal("archive read failed: %s", archive_error_string(a));
             if (size == 0)
                 break;
 
             if (data)
                 if (fwrite(buff, 1, size, data) != size)
-                    errx(1, "short write");
+                    fatal("short write");
         }
 
         if (data) {
             if (ferror(data) || fclose(data) != 0)
-                errx(1, "io error");
+                fatal("io error");
             data = NULL;
         }
 
@@ -119,5 +120,5 @@ fspec_fromarchive(struct archive *a, const char *data_dir)
     }
 
     if (fflush(stdout) != 0 || ferror(stdout))
-        errx(1, "io error");
+        fatal("io error");
 }

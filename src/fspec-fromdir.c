@@ -7,7 +7,9 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <err.h>
+#include <archive.h>
+#include <stdnoreturn.h>
+#include "common.h"
 
 int root_owned = 0;
 int absolute = 0;
@@ -36,15 +38,15 @@ recurse(char *path, size_t len, size_t max)
 
     dlen = scandir(path, &d, skipdot, alphasort);
     if (dlen < 0)
-        err(1, "scandir %s", path);
+        fatal("scandir %s:", path);
     if (len == max)
-        errx(1, "path is too long");
+        fatal("path is too long");
     if (len)
         path[len++] = '/';
     for (int i = 0; i < dlen; ++i) {
         char *end = memccpy(path + len, d[i]->d_name, '\0', max - len);
         if (!end)
-            errx(1, "path is too long");
+            fatal("path is too long");
         printentry(path, end - path - 1, max);
         free(d[i]);
     }
@@ -59,7 +61,7 @@ printentry(char *path, size_t len, size_t max)
     struct stat st;
 
     if (lstat(path, &st) != 0)
-        err(1, "stat %s", path);
+        fatal("stat %s:", path);
 
     printf("%s/%s\n", prefix, path);
 
@@ -68,9 +70,9 @@ printentry(char *path, size_t len, size_t max)
         puts("type=reg");
         if (absolute) {
             if (realpath(path, buf) == NULL)
-                err(1, "realpath of %s failed", path);
+                fatal("realpath of %s failed:", path);
             if (strchr(buf, '\n'))
-                errx(1, "file path contains new line, aborting");
+                fatal("file path contains new line, aborting");
             printf("source=%s\n", buf);
         }
         break;
@@ -78,12 +80,12 @@ printentry(char *path, size_t len, size_t max)
         puts("type=sym");
         buflen = readlink(path, buf, sizeof(buf));
         if (buflen < 0)
-            err(1, "readlink of %s failed", path);
+            fatal("readlink of %s failed:", path);
         if (buflen >= sizeof(buf))
-            errx(1, "link target of %s too long", path);
+            fatal("link target of %s too long", path);
         buf[buflen] = 0;
         if (strchr(buf, '\n'))
-            errx(1, "link target contains new line");
+            fatal("link target contains new line");
         printf("target=%s\n", buf);
         break;
     case S_IFCHR:
@@ -121,7 +123,7 @@ main(int argc, char **argv)
         switch (opt) {
         case 'C':
             if (chdir(optarg) != 0)
-                err(1, "chdir %s", optarg);
+                fatal("chdir %s:", optarg);
             break;
         case 'p':
            prefix = optarg;
@@ -141,9 +143,9 @@ main(int argc, char **argv)
         for (; optind < argc; ++optind) {
             char *end = memccpy(path, argv[optind], '\0', sizeof(path));
             if (!end)
-                errx(1, "path is too long");
+                fatal("path is too long");
             if (path[0] == '/')
-                errx(1, "paths must be relative");
+                fatal("paths must be relative");
             printentry(path, end - path - 1, sizeof(path));
         }
     } else {
@@ -152,6 +154,6 @@ main(int argc, char **argv)
     }
 
     if (fflush(stdout) != 0 || ferror(stdout))
-        errx(1, "io error");
+        fatal("io error");
     return 0;
 }

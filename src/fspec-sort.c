@@ -3,9 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <err.h>
 #include <unistd.h>
-#include <archive.h>
+#include <stdnoreturn.h>
 #include "common.h"
 
 static char *argv0;
