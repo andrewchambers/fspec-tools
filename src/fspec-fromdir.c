@@ -12,8 +12,10 @@
 #include "common.h"
 
 static char *rootdir;
-static int uid = 0;
-static int gid = 0;
+static int want_uid = 0;
+static int want_gid = 0;
+static int want_mode = 0;
+static int want_execute_mode = 0;
 
 static void
 usage(const char *argv0)
@@ -98,11 +100,39 @@ printentry(char *path, size_t len, size_t max)
 		break;
 	}
 
-	if (!S_ISLNK(st.st_mode))
-		printf("mode=%04o\n", st.st_mode & ~S_IFMT);
-	if (uid)
+	if (!S_ISLNK(st.st_mode) && (want_mode || want_execute_mode)) {
+		mode_t mode;
+
+		if (want_mode) {
+			mode = st.st_mode & ~S_IFMT;
+		} else if (want_execute_mode) {
+			switch (st.st_mode & S_IFMT) {
+			case S_IFREG:
+				mode = 0644 | (st.st_mode&0111);
+				break;
+			case S_IFLNK:
+				mode = 0777;
+				break;
+			case S_IFCHR:
+			case S_IFBLK:
+				mode = 0600;
+				break;
+			case S_IFDIR:
+				mode = 0755;
+				break;
+			case S_IFIFO:
+				mode = 0644;
+				break;
+			default:
+				fatal("unsupported file mode");
+			}
+		}
+
+		printf("mode=%04o\n", mode);
+	}
+	if (want_uid)
 		printf("uid=%d\n", st.st_uid);
-	if (gid)
+	if (want_gid)
 		printf("gid=%d\n", st.st_gid);
 	putchar('\n');
 
@@ -118,13 +148,19 @@ main(int argc, char **argv)
 	static char path[PATH_MAX];
 
 	prog = argc ? basename(argv[0]) : "fspec-dir";
-	while ((opt = getopt(argc, argv, "ug")) != -1) {
+	while ((opt = getopt(argc, argv, "ugmx")) != -1) {
 		switch (opt) {
 		case 'u':
-			uid = 1;
+			want_uid = 1;
 			break;
 		case 'g':
-			gid = 1;
+			want_gid = 1;
+			break;
+		case 'm':
+			want_mode = 1;
+			break;
+		case 'x':
+			want_execute_mode = 1;
 			break;
 		default:
 			usage(prog);
