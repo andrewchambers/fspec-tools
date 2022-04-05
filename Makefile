@@ -19,6 +19,7 @@ BIN=\
 
 LIBOBJ=\
 	src/util.o\
+	src/parse.o\
 	src/archive.o
 
 .PHONY: all

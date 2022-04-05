@@ -33,6 +33,7 @@ mode=0644
 /d
 type=sym
 target=some/target
+mode=0777
 
 EOF
 
