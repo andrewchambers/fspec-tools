@@ -10,7 +10,7 @@
 static void
 usage(const char *prog)
 {
-	fprintf(stderr, "usage: %s [manifest]\n", prog);
+	fprintf(stderr, "usage: %s [fspec]\n", prog);
 	exit(1);
 }
 
