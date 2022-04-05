@@ -38,3 +38,13 @@ reallocarray(void *p, size_t n, size_t m)
 	}
 	return realloc(p, n * m);
 }
+
+char *
+xstrdup(const char *s)
+{
+	char *duped;
+	duped = strdup(s);
+	if (!duped)
+		fatal(NULL);
+	return duped;
+}

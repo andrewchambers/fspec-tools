@@ -15,7 +15,8 @@ BIN=\
 	src/fspec-cpio\
 	src/fspec-iso\
 	src/fspec-sort\
-	src/fspec-fromdir
+	src/fspec-fromdir \
+	src/fspec-changeset
 
 LIBOBJ=\
 	src/util.o\
@@ -45,6 +46,9 @@ src/fspec-fromdir: src/fspec-fromdir.o
 
 src/fspec-sort: src/fspec-sort.o
 	$(CC) $(LDFLAGS) -o $@ src/fspec-sort.o src/libcommon.a $(LDLIBS)
+
+src/fspec-changeset: src/fspec-changeset.o
+	$(CC) $(LDFLAGS) -o $@ src/fspec-changeset.o src/libcommon.a $(LDLIBS)
 
 .PHONY: check
 check: all

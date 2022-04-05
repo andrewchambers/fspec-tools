@@ -159,10 +159,9 @@ fspec_archive(struct archive *a, char *input)
 
 	archive_entry_free(entry);
 
-	if (ferror(stdin))
-		fatal("io error:");
-	
 	if (archive_write_close(a) != ARCHIVE_OK)
 		fatal("archive close failed: %s", archive_error_string(a));
 
+	if (fflush(stdout) != 0 || ferror(stdout))
+		fatal("io error:");
 }
