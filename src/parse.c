@@ -17,9 +17,12 @@ parse(FILE *file, void (*fspec)(char *, size_t))
 		if (pos - buf > max / 2) {
 			len = pos - buf;
 			max *= 2;
-			buf = bufalloc = realloc(bufalloc, max);
-			if (!buf)
+			bufalloc = realloc(bufalloc, max);
+			if (!bufalloc)
 				fatal(NULL);
+			if (buf == bufstack)
+				memcpy(bufalloc, bufstack, len);
+			buf = bufalloc;
 			rec = buf;
 			pos = buf + len;
 		}
@@ -43,9 +46,10 @@ parse(FILE *file, void (*fspec)(char *, size_t))
 			if (!end) {
 				if (rec > buf) {
 					memmove(buf, rec, pos - rec + len);
-					pos = buf + (pos - rec) + len;
+					pos = buf + (pos - rec);
 					rec = buf;
 				}
+				pos += len;
 				break;
 			}
 			len -= end + 1 - pos;
